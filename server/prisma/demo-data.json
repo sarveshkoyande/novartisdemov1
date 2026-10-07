@@ -1,0 +1,2394 @@
+{
+ "Form": [
+  {
+   "id": "form-default",
+   "name": "Requirement Gathering Form",
+   "description": "The original campaign requirement-gathering flow.",
+   "active": 1,
+   "order": 0
+  }
+ ],
+ "FormSection": [
+  {
+   "id": "generic",
+   "formId": "form-default",
+   "num": "2",
+   "name": "General Campaign Details",
+   "icon": "▣",
+   "parentId": null,
+   "audienceGate": 1,
+   "note": null,
+   "needsJson": "{\"preplan\":[\"cdm\",\"oms\"],\"plan\":[\"aor\",\"cdm\"],\"exec\":[\"aor\"]}",
+   "order": 0
+  },
+  {
+   "id": "emaildetails",
+   "formId": "form-default",
+   "num": "3",
+   "name": "Email Details",
+   "icon": "mail",
+   "parentId": null,
+   "audienceGate": 0,
+   "note": null,
+   "needsJson": "{\"preplan\":[],\"plan\":[\"aor\",\"cep\"],\"exec\":[]}",
+   "order": 1
+  },
+  {
+   "id": "journeydetails",
+   "formId": "form-default",
+   "num": "4",
+   "name": "Journey Details",
+   "icon": "route",
+   "parentId": null,
+   "audienceGate": 0,
+   "note": null,
+   "needsJson": "{\"preplan\":[],\"plan\":[\"aor\",\"cdm\"],\"exec\":[]}",
+   "order": 2
+  }
+ ],
+ "FormField": [
+  {
+   "id": "cmrt7s6xv0000w03msg4i10lz",
+   "sectionId": "generic",
+   "fieldKey": "10",
+   "phase": "preplan",
+   "label": "TactPlan ID",
+   "type": "text",
+   "owner": "cdm",
+   "bucket": "tactplan",
+   "source": "⇢ TactPlan",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 0,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s6y50002w03mv2v83vza",
+   "sectionId": "generic",
+   "fieldKey": "14",
+   "phase": "preplan",
+   "label": "Brand",
+   "type": "text",
+   "owner": "cdm",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 4,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s6yb0003w03me581d7tq",
+   "sectionId": "generic",
+   "fieldKey": "15",
+   "phase": "preplan",
+   "label": "Indication",
+   "type": "text",
+   "owner": "cdm",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 5,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s6yg0004w03m2em7cehw",
+   "sectionId": "generic",
+   "fieldKey": "17",
+   "phase": "preplan",
+   "label": "Branded/Unbranded",
+   "type": "sel",
+   "owner": "cdm",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": "[\"Branded\",\"Unbranded\"]",
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 7,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s6yl0005w03m9y5g7fdq",
+   "sectionId": "generic",
+   "fieldKey": "18",
+   "phase": "preplan",
+   "label": "Audience Type",
+   "type": "sel",
+   "owner": "cdm",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": "[\"HCP\",\"DTC\"]",
+   "condJson": null,
+   "drives": "audience",
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 8,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s6yu0006w03mkiyd1ds9",
+   "sectionId": "generic",
+   "fieldKey": "11",
+   "phase": "preplan",
+   "label": "Channels Type",
+   "type": "multi",
+   "owner": "cdm",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": "[\"Email\",\"SMS\"]",
+   "condJson": null,
+   "drives": "channels",
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 1,
+   "order": 1,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s6z00007w03m6rkefa4x",
+   "sectionId": "generic",
+   "fieldKey": "12",
+   "phase": "preplan",
+   "label": "Request Type (Asset Scope)",
+   "type": "sel",
+   "owner": "cdm",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": "[\"New Brand Launch\",\"New Indication Launch\",\"Update Existing Campaign\"]",
+   "condJson": null,
+   "drives": "assetScope",
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 2,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s6z50008w03mb01akwoc",
+   "sectionId": "generic",
+   "fieldKey": "21",
+   "phase": "preplan",
+   "label": "Campaign Name",
+   "type": "text",
+   "owner": "aor",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 13,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s6zc0009w03mv20p59ay",
+   "sectionId": "generic",
+   "fieldKey": "23",
+   "phase": "preplan",
+   "label": "Campaign Goal",
+   "type": "ta",
+   "owner": "aor",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 1,
+   "order": 18,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s6zh000aw03m7dvhojdm",
+   "sectionId": "generic",
+   "fieldKey": "19",
+   "phase": "preplan",
+   "label": "Campaign code",
+   "type": "text",
+   "owner": "oms",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 9,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s6zr000cw03mrzrikp9g",
+   "sectionId": "generic",
+   "fieldKey": "22",
+   "phase": "preplan",
+   "label": "Campaign Type",
+   "type": "sel",
+   "owner": "aor",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": "[\"Model based\",\"Ad Hoc\",\"Cadenced\",\"Real-time\",\"Real-time & Cadenced\"]",
+   "condJson": null,
+   "drives": "campaignType",
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 14,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s6zv000dw03mq7zag2is",
+   "sectionId": "generic",
+   "fieldKey": "27",
+   "phase": "preplan",
+   "label": "Segment Name",
+   "type": "text",
+   "owner": "aor",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 23,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s700000ew03m67xwurro",
+   "sectionId": "generic",
+   "fieldKey": "16",
+   "phase": "preplan",
+   "label": "Therapeutic Area",
+   "type": "text",
+   "owner": "cdm",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 6,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s704000fw03m2fvekqcg",
+   "sectionId": "generic",
+   "fieldKey": "25",
+   "phase": "preplan",
+   "label": "Desired campaign GO LIVE date",
+   "type": "date",
+   "owner": "aor",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 21,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s709000gw03m32k8lxfd",
+   "sectionId": "generic",
+   "fieldKey": "20",
+   "phase": "preplan",
+   "label": "Send Time Optimization",
+   "type": "sel",
+   "owner": "cdm",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": "[\"Yes\",\"No\"]",
+   "condJson": null,
+   "drives": "sendTimeOptimization",
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 10,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s70e000hw03myqr1d66q",
+   "sectionId": "generic",
+   "fieldKey": "20.1",
+   "phase": "preplan",
+   "label": "Sending Time Window",
+   "type": "text",
+   "owner": "cdm",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": "{\"ref\":\"cmrt7s709000gw03m32k8lxfd\",\"value\":\"Yes\"}",
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 11,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s70j000iw03m20p5wf7a",
+   "sectionId": "generic",
+   "fieldKey": "20.2",
+   "phase": "preplan",
+   "label": "STO Random",
+   "type": "text",
+   "owner": "cdm",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": "{\"ref\":\"cmrt7s709000gw03m32k8lxfd\",\"value\":\"Yes\"}",
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 12,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s70t000kw03m6rthrefp",
+   "sectionId": "emaildetails",
+   "fieldKey": "43",
+   "phase": "plan",
+   "label": "A/B Testing required?",
+   "type": "sel",
+   "owner": "cep",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": "[\"Yes\",\"No\"]",
+   "condJson": null,
+   "drives": "abTesting",
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 1,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s70z000lw03m2pl6ht1q",
+   "sectionId": "emaildetails",
+   "fieldKey": "43.1",
+   "phase": "plan",
+   "label": "Approximate Audience Size",
+   "type": "text",
+   "owner": "cep",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": "{\"logic\":\"and\",\"rules\":[{\"key\":\"abTesting\",\"value\":\"Yes\"}]}",
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 2,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s716000mw03mky76nx4m",
+   "sectionId": "emaildetails",
+   "fieldKey": "43.2",
+   "phase": "plan",
+   "label": "How do you want the test split?",
+   "type": "text",
+   "owner": "cep",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": "{\"logic\":\"and\",\"rules\":[{\"key\":\"abTesting\",\"value\":\"Yes\"}]}",
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 1,
+   "order": 3,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s71b000nw03mw3lv40j9",
+   "sectionId": "emaildetails",
+   "fieldKey": "43.3",
+   "phase": "plan",
+   "label": "How would you like your test to send?",
+   "type": "text",
+   "owner": "cep",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": "{\"logic\":\"and\",\"rules\":[{\"key\":\"abTesting\",\"value\":\"Yes\"}]}",
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 1,
+   "order": 4,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s71n000pw03m179e2a8b",
+   "sectionId": "generic",
+   "fieldKey": "26",
+   "phase": "preplan",
+   "label": "From Name/From Friendly (Sender profile)",
+   "type": "text",
+   "owner": "aor",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 22,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s73u0013w03m3u8sjq9c",
+   "sectionId": "generic",
+   "fieldKey": "22.1",
+   "phase": "preplan",
+   "label": "Has Enrolment Form?",
+   "type": "sel",
+   "owner": "aor",
+   "bucket": "newapp",
+   "source": "—",
+   "optionsJson": "[\"No\",\"Yes\"]",
+   "condJson": null,
+   "drives": "enrollment",
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 1,
+   "order": 15,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s76p001ow03ms7judim1",
+   "sectionId": "generic",
+   "fieldKey": "24",
+   "phase": "preplan",
+   "label": "Number of Emails",
+   "type": "text",
+   "owner": "aor",
+   "bucket": "unmapped",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": "emailCount",
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 19,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s771001pw03m0rc71ce9",
+   "sectionId": "generic",
+   "fieldKey": "28",
+   "phase": "preplan",
+   "label": "Segment Rules",
+   "type": "ta",
+   "owner": "cdm",
+   "bucket": "xm",
+   "source": "⇢ XM handover (HQE Adhoc & E360 only)",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 1,
+   "order": 24,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s77a001rw03mktrjdvqi",
+   "sectionId": "journeydetails",
+   "fieldKey": "50",
+   "phase": "plan",
+   "label": "Data Full Refresh or Incremental - Depends on type of Campaign",
+   "type": "text",
+   "owner": "cdm",
+   "bucket": "xm",
+   "source": "⇢ XM handover (HQE Adhoc & E360 only)",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 1,
+   "order": 0,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s77e001sw03mgvj9n50o",
+   "sectionId": "journeydetails",
+   "fieldKey": "51",
+   "phase": "plan",
+   "label": "Refresh Frequency",
+   "type": "sel",
+   "owner": "cdm",
+   "bucket": "xm",
+   "source": "⇢ XM handover (HQE Adhoc & E360 only)",
+   "optionsJson": "[\"Daily\",\"Weekly\",\"Monthly\"]",
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 1,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s77m001uw03ms62ycxpa",
+   "sectionId": "generic",
+   "fieldKey": "29",
+   "phase": "preplan",
+   "label": "Specialty Inclusion",
+   "type": "text",
+   "owner": "cdm",
+   "bucket": "xm",
+   "source": "⇢ XM handover (HQE Adhoc & E360 only)",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 25,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s77q001vw03mrwyubsbg",
+   "sectionId": "generic",
+   "fieldKey": "30",
+   "phase": "preplan",
+   "label": "Specialty Exclusion",
+   "type": "text",
+   "owner": "cdm",
+   "bucket": "xm",
+   "source": "⇢ XM handover (HQE Adhoc & E360 only)",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 26,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmrt7s78b001yw03mtp1p2gxr",
+   "sectionId": "generic",
+   "fieldKey": "24.1",
+   "phase": "preplan",
+   "label": "Number of SMS",
+   "type": "text",
+   "owner": "aor",
+   "bucket": "unmapped",
+   "source": "—",
+   "optionsJson": null,
+   "condJson": null,
+   "drives": "smsCount",
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 20,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmumefe9t0000mk3mapg1co9m",
+   "sectionId": "generic",
+   "fieldKey": "13",
+   "phase": "preplan",
+   "label": "New Brand?",
+   "type": "sel",
+   "owner": "cdm",
+   "bucket": null,
+   "source": null,
+   "optionsJson": "[\"Yes\",\"No\"]",
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 3,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmumefect0001mk3mwv155yve",
+   "sectionId": "generic",
+   "fieldKey": "22.2",
+   "phase": "preplan",
+   "label": "Is Survey Sheet Available?",
+   "type": "sel",
+   "owner": "aor",
+   "bucket": null,
+   "source": null,
+   "optionsJson": "[\"Yes\",\"No\"]",
+   "condJson": "{\"ref\":\"cmrt7s73u0013w03m3u8sjq9c\",\"value\":\"Yes\"}",
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 16,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmumefed20002mk3mqk1cxkzg",
+   "sectionId": "generic",
+   "fieldKey": "22.3",
+   "phase": "preplan",
+   "label": "Attach Survey Sheet",
+   "type": "file",
+   "owner": "aor",
+   "bucket": null,
+   "source": null,
+   "optionsJson": null,
+   "condJson": "{\"ref\":\"cmumefect0001mk3mwv155yve\",\"value\":\"Yes\"}",
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 17,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmumefeey0003mk3mynslg326",
+   "sectionId": "generic",
+   "fieldKey": "31",
+   "phase": "preplan",
+   "label": "User Exit Criteria for Campaign Journey",
+   "type": "ta",
+   "owner": "cdm",
+   "bucket": null,
+   "source": null,
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 27,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmumixgpd00003g3m6j3rb9b8",
+   "sectionId": "emaildetails",
+   "fieldKey": "42",
+   "phase": "plan",
+   "label": "Behavior Chain",
+   "type": "ta",
+   "owner": "aor",
+   "bucket": null,
+   "source": null,
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 0,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmumixgrj00013g3msee6axjr",
+   "sectionId": "emaildetails",
+   "fieldKey": "43.4",
+   "phase": "plan",
+   "label": "Metadata IDs to A/B test",
+   "type": "text",
+   "owner": "cep",
+   "bucket": null,
+   "source": null,
+   "optionsJson": null,
+   "condJson": "{\"logic\":\"and\",\"rules\":[{\"key\":\"abTesting\",\"value\":\"Yes\"}]}",
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 5,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmumixgrp00023g3m508jgh05",
+   "sectionId": "emaildetails",
+   "fieldKey": "44",
+   "phase": "plan",
+   "label": "Asset Handoff",
+   "type": "text",
+   "owner": "aor",
+   "bucket": null,
+   "source": null,
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 6,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmumixgrv00033g3mi7l4rcr6",
+   "sectionId": "emaildetails",
+   "fieldKey": "44.1",
+   "phase": "plan",
+   "label": "Content Brief (If applicable for Studio to complete creative)",
+   "type": "file",
+   "owner": "aor",
+   "bucket": null,
+   "source": null,
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 7,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmumixgs100043g3mb9nzazci",
+   "sectionId": "emaildetails",
+   "fieldKey": "44.2",
+   "phase": "plan",
+   "label": "MAP Verified / approved PDF",
+   "type": "file",
+   "owner": "aor",
+   "bucket": null,
+   "source": null,
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 8,
+   "groupsJson": null,
+   "derivesFrom": null
+  },
+  {
+   "id": "cmumixgs700053g3mk4je6cni",
+   "sectionId": "emaildetails",
+   "fieldKey": "44.3",
+   "phase": "plan",
+   "label": "Source file ZIP",
+   "type": "file",
+   "owner": "aor",
+   "bucket": null,
+   "source": null,
+   "optionsJson": null,
+   "condJson": null,
+   "drives": null,
+   "cascadeFromField": null,
+   "locked": 0,
+   "lockedValue": null,
+   "wide": 0,
+   "order": 9,
+   "groupsJson": null,
+   "derivesFrom": null
+  }
+ ],
+ "BrandIndication": [
+  {
+   "id": 1,
+   "brand": "Kisqali",
+   "indication": "HR+/HER2− early breast cancer",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Oncology"
+  },
+  {
+   "id": 2,
+   "brand": "Kisqali",
+   "indication": "HR+/HER2− metastatic breast cancer",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Oncology"
+  },
+  {
+   "id": 3,
+   "brand": "Cosentyx",
+   "indication": "Plaque psoriasis",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Immunology"
+  },
+  {
+   "id": 4,
+   "brand": "Cosentyx",
+   "indication": "Psoriatic arthritis",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Immunology"
+  },
+  {
+   "id": 5,
+   "brand": "Entresto",
+   "indication": "Heart failure with preserved ejection fraction (HFpEF)",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Cardiovascular"
+  },
+  {
+   "id": 6,
+   "brand": "Leqvio",
+   "indication": "Hyperlipidemia / LDL-C reduction",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Cardiovascular"
+  },
+  {
+   "id": 7,
+   "brand": "Pluvicto",
+   "indication": "PSMA-positive metastatic castration-resistant prostate cancer",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Oncology"
+  },
+  {
+   "id": 8,
+   "brand": "Scemblix",
+   "indication": "Chronic myeloid leukemia (CML)",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Oncology"
+  },
+  {
+   "id": 9,
+   "brand": "Kesimpta",
+   "indication": "Relapsing multiple sclerosis",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Neuroscience"
+  },
+  {
+   "id": 14,
+   "brand": "Tafinlar + Mekinist",
+   "indication": "BRAF V600E/K melanoma",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Oncology"
+  },
+  {
+   "id": 15,
+   "brand": "Lutathera",
+   "indication": "Gastroenteropancreatic neuroendocrine tumors (GEP-NETs)",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Oncology"
+  },
+  {
+   "id": 18,
+   "brand": "Cosentyx",
+   "indication": "Hidradenitis suppurativa",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Immunology"
+  },
+  {
+   "id": 19,
+   "brand": "Cosentyx",
+   "indication": "Ankylosing spondylitis",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Immunology"
+  },
+  {
+   "id": 20,
+   "brand": "Xolair",
+   "indication": "Chronic spontaneous urticaria",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Immunology"
+  },
+  {
+   "id": 21,
+   "brand": "Fabhalta",
+   "indication": "Paroxysmal nocturnal hemoglobinuria (PNH)",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Renal / Hematology"
+  },
+  {
+   "id": 22,
+   "brand": "Fabhalta",
+   "indication": "IgA nephropathy",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Renal / Hematology"
+  },
+  {
+   "id": 23,
+   "brand": "Entresto",
+   "indication": "Heart failure with reduced ejection fraction (HFrEF)",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Cardiovascular"
+  },
+  {
+   "id": 27,
+   "brand": "Zolgensma",
+   "indication": "Spinal muscular atrophy (SMA)",
+   "brandedUnbranded": "Branded",
+   "therapeuticArea": "Neuroscience"
+  }
+ ],
+ "TacticFieldTemplate": [],
+ "NudgeRule": [
+  {
+   "id": "cmru5s2ai0000lo3mjyrxprjg",
+   "trigger": "section_submitted",
+   "triggerSectionId": "generic",
+   "triggerPhase": "preplan",
+   "triggerFieldDrives": null,
+   "triggerValue": null,
+   "message": "CPF journey initiated — the Visio diagram can now be updated in parallel.",
+   "nudgeMessage": null,
+   "nudgeToOwner": null,
+   "active": 0,
+   "order": 0,
+   "conditionsJson": null,
+   "triggerFieldKey": null,
+   "triggerSectionIds": null
+  },
+  {
+   "id": "cmru5s2av0001lo3m2r56kyey",
+   "trigger": "field_value_equals",
+   "triggerSectionId": null,
+   "triggerPhase": null,
+   "triggerFieldDrives": "assetScope",
+   "triggerValue": "newbrand",
+   "message": "Great — **Asset Scope: New Brand Launch** is set. A **BU Setup** block now runs in parallel with CPF.",
+   "nudgeMessage": "A Business Unit setup task has been assigned to the **SFMC Product Owner (CEP)** and **MDS/Data Cloud**.",
+   "nudgeToOwner": "cep",
+   "active": 0,
+   "order": 1,
+   "conditionsJson": null,
+   "triggerFieldKey": null,
+   "triggerSectionIds": null
+  },
+  {
+   "id": "cmru5s2b10002lo3mwmr2dudo",
+   "trigger": "field_value_equals",
+   "triggerSectionId": null,
+   "triggerPhase": null,
+   "triggerFieldDrives": "assetScope",
+   "triggerValue": "newind",
+   "message": "Great — **Asset Scope: New Indication Launch** is set. A **BU Setup** block now runs in parallel with CPF, just as it does for a new brand.",
+   "nudgeMessage": "A Business Unit setup task has been assigned to the **SFMC Product Owner (CEP)** and **MDS/Data Cloud**.",
+   "nudgeToOwner": "cep",
+   "active": 0,
+   "order": 2,
+   "conditionsJson": null,
+   "triggerFieldKey": null,
+   "triggerSectionIds": null
+  },
+  {
+   "id": "cmru5s2b80003lo3mppy5vfop",
+   "trigger": "field_value_equals",
+   "triggerSectionId": null,
+   "triggerPhase": null,
+   "triggerFieldDrives": "assetScope",
+   "triggerValue": "update",
+   "message": "Great — **Asset Scope: Update Existing Campaign** is set. No new Business Unit needed.\n\n**Next:** set Channel Type and move on to CPF details.",
+   "nudgeMessage": null,
+   "nudgeToOwner": null,
+   "active": 0,
+   "order": 3,
+   "conditionsJson": null,
+   "triggerFieldKey": null,
+   "triggerSectionIds": null
+  },
+  {
+   "id": "cmru5s2bd0004lo3m4kw5qk7g",
+   "trigger": "field_value_equals",
+   "triggerSectionId": null,
+   "triggerPhase": null,
+   "triggerFieldDrives": "channels",
+   "triggerValue": "Email + SMS",
+   "message": "Nice — Channel Type set to **Email + SMS**. Both the Email and SMS build sections are now in scope.\n\n**Next:** Automatrix will unlock once Email produces a FUSE ID.",
+   "nudgeMessage": null,
+   "nudgeToOwner": null,
+   "active": 0,
+   "order": 4,
+   "conditionsJson": null,
+   "triggerFieldKey": null,
+   "triggerSectionIds": null
+  },
+  {
+   "id": "cmru5s2bg0005lo3m3dqnhp9r",
+   "trigger": "field_value_equals",
+   "triggerSectionId": null,
+   "triggerPhase": null,
+   "triggerFieldDrives": "channels",
+   "triggerValue": "Email only",
+   "message": "Nice — Channel Type set to **Email only**. The Email build section is in scope; SMS stays hidden — none of its fields will be asked.",
+   "nudgeMessage": null,
+   "nudgeToOwner": null,
+   "active": 0,
+   "order": 5,
+   "conditionsJson": null,
+   "triggerFieldKey": null,
+   "triggerSectionIds": null
+  },
+  {
+   "id": "cmru5s2bm0006lo3m2fm3k85q",
+   "trigger": "field_value_equals",
+   "triggerSectionId": null,
+   "triggerPhase": null,
+   "triggerFieldDrives": "channels",
+   "triggerValue": "SMS only",
+   "message": "Nice — Channel Type set to **SMS only**. The SMS build section is in scope; Email stays hidden — none of its fields will be asked.",
+   "nudgeMessage": null,
+   "nudgeToOwner": null,
+   "active": 0,
+   "order": 6,
+   "conditionsJson": null,
+   "triggerFieldKey": null,
+   "triggerSectionIds": null
+  },
+  {
+   "id": "cmru5s2br0007lo3mo28tzh3p",
+   "trigger": "field_value_equals",
+   "triggerSectionId": null,
+   "triggerPhase": null,
+   "triggerFieldDrives": "enrollment",
+   "triggerValue": "Yes",
+   "message": "Great — Enrollment Sign-Up set to **Yes**. I will request the OMS team to upload the required enrollment form details — Source Type/Name, Franchise, Program, Survey Q&A, and the Metadata Sheet.",
+   "nudgeMessage": "AOR has confirmed this campaign is triggered by an enrollment form sign-up. Please upload the required Source/Program/Survey details for this campaign.",
+   "nudgeToOwner": "oms",
+   "active": 0,
+   "order": 7,
+   "conditionsJson": null,
+   "triggerFieldKey": null,
+   "triggerSectionIds": null
+  },
+  {
+   "id": "cmru5s2bv0008lo3mp6ji34jz",
+   "trigger": "field_value_equals",
+   "triggerSectionId": null,
+   "triggerPhase": null,
+   "triggerFieldDrives": "enrollment",
+   "triggerValue": "No",
+   "message": "Got it — Enrollment Sign-Up set to **No**. Campaign Source Code and the Metadata Sheet get disabled. Everything else in OMS (Source Type, Franchise, Program, Survey, etc.) is unaffected — those only depend on Asset Scope.",
+   "nudgeMessage": null,
+   "nudgeToOwner": null,
+   "active": 0,
+   "order": 8,
+   "conditionsJson": null,
+   "triggerFieldKey": null,
+   "triggerSectionIds": null
+  },
+  {
+   "id": "cmru5s2c00009lo3meav2zz6v",
+   "trigger": "phase_complete",
+   "triggerSectionId": null,
+   "triggerPhase": "preplan",
+   "triggerFieldDrives": null,
+   "triggerValue": null,
+   "message": "CPF details are fully complete — every preplanning field is filled across all owners.",
+   "nudgeMessage": "Ready to move to **CRF & Tactic Build** — Campaign Operations can advance the phase when ready.",
+   "nudgeToOwner": "ops",
+   "active": 0,
+   "order": 9,
+   "conditionsJson": null,
+   "triggerFieldKey": null,
+   "triggerSectionIds": null
+  },
+  {
+   "id": "cmru5s2c7000alo3mofq7z6vg",
+   "trigger": "fields_remaining",
+   "triggerSectionId": "cma",
+   "triggerPhase": null,
+   "triggerFieldDrives": null,
+   "triggerValue": null,
+   "message": "CMA Metadata Sheet still needs **{{remaining}} of {{total}}** fields filled.",
+   "nudgeMessage": "A reminder has been sent to the **AOR** to complete the remaining CMA Metadata Sheet fields; Data Enablement is waiting on it.",
+   "nudgeToOwner": "aor",
+   "active": 0,
+   "order": 10,
+   "conditionsJson": "{\"logic\":\"and\",\"rules\":[{\"key\":\"enrollment\",\"value\":\"Yes\"},{\"key\":\"metadataSource\",\"value\":\"New metadata\"}]}",
+   "triggerFieldKey": "1.4.6",
+   "triggerSectionIds": null
+  }
+ ],
+ "PlanMilestone": [],
+ "FieldEntry": [],
+ "Comment": [],
+ "AgentSkill": [
+  {
+   "id": 1,
+   "title": "Remind about spelling on proposal confirmation",
+   "rule": "Whenever a proposal is staged, also remind the user to double check the spelling before confirming, since typos go straight into the form.",
+   "active": 1,
+   "createdAt": "2026-07-17T10:43:37.987+00:00"
+  },
+  {
+   "id": 2,
+   "title": "Exclude specified email fields",
+   "rule": "When the user states that a field is not required or can be removed, do not include that field in any proposals for the relevant section. If the field is 'No # of emails' or 'Wimilary Email 1', specifically exclude them.",
+   "active": 1,
+   "createdAt": "2026-07-19T10:03:36.131+00:00"
+  },
+  {
+   "id": 3,
+   "title": "Prefers Guided Mode with clickable choices",
+   "rule": "This user prefers to be guided one question at a time (Guided Mode), with clickable choice buttons wherever the answer is a fixed small set, rather than being asked for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-18T06:39:06.746+00:00"
+  },
+  {
+   "id": 4,
+   "title": "Guided, one-at-a-time with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode), asking a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-18T06:50:33.537+00:00"
+  },
+  {
+   "id": 5,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-18T09:12:16.808+00:00"
+  },
+  {
+   "id": 6,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-18T10:40:35.921+00:00"
+  },
+  {
+   "id": 7,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-18T12:51:54.717+00:00"
+  },
+  {
+   "id": 8,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-18T13:10:45.663+00:00"
+  },
+  {
+   "id": 9,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-18T13:21:58.862+00:00"
+  },
+  {
+   "id": 10,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-18T13:45:34.074+00:00"
+  },
+  {
+   "id": 11,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T06:52:54.990+00:00"
+  },
+  {
+   "id": 12,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T06:58:55.594+00:00"
+  },
+  {
+   "id": 13,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T07:00:55.132+00:00"
+  },
+  {
+   "id": 14,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T07:28:01.991+00:00"
+  },
+  {
+   "id": 15,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T07:30:45.025+00:00"
+  },
+  {
+   "id": 16,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T07:47:31.350+00:00"
+  },
+  {
+   "id": 17,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T08:04:03.019+00:00"
+  },
+  {
+   "id": 18,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T08:07:15.530+00:00"
+  },
+  {
+   "id": 19,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T08:11:01.652+00:00"
+  },
+  {
+   "id": 20,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T08:24:42.375+00:00"
+  },
+  {
+   "id": 21,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T08:28:00.066+00:00"
+  },
+  {
+   "id": 22,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T08:43:26.574+00:00"
+  },
+  {
+   "id": 23,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T08:48:32.545+00:00"
+  },
+  {
+   "id": 24,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T08:58:32.940+00:00"
+  },
+  {
+   "id": 25,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T09:00:49.349+00:00"
+  },
+  {
+   "id": 26,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T09:16:36.955+00:00"
+  },
+  {
+   "id": 27,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T09:17:18.409+00:00"
+  },
+  {
+   "id": 28,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T09:19:56.982+00:00"
+  },
+  {
+   "id": 29,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T09:21:25.454+00:00"
+  },
+  {
+   "id": 30,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T09:21:50.445+00:00"
+  },
+  {
+   "id": 31,
+   "title": "Guided one-at-a-time with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T09:34:05.427+00:00"
+  },
+  {
+   "id": 32,
+   "title": "Guided one-at-a-time with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T09:34:40.577+00:00"
+  },
+  {
+   "id": 33,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T09:35:08.110+00:00"
+  },
+  {
+   "id": 34,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T10:05:04.918+00:00"
+  },
+  {
+   "id": 35,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-19T11:41:45.987+00:00"
+  },
+  {
+   "id": 36,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-20T09:16:05.526+00:00"
+  },
+  {
+   "id": 37,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-20T09:52:55.014+00:00"
+  },
+  {
+   "id": 38,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-20T09:57:03.463+00:00"
+  },
+  {
+   "id": 39,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-20T13:35:48.703+00:00"
+  },
+  {
+   "id": 40,
+   "title": "Guided one-at-a-time with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-20T13:50:18.952+00:00"
+  },
+  {
+   "id": 41,
+   "title": "Guided one-at-a-time with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-20T13:50:59.559+00:00"
+  },
+  {
+   "id": 42,
+   "title": "Guided one-at-a-time with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-20T14:09:24.233+00:00"
+  },
+  {
+   "id": 43,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-20T14:17:23.808+00:00"
+  },
+  {
+   "id": 44,
+   "title": "Guided one-at-a-time with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-22T11:51:35.246+00:00"
+  },
+  {
+   "id": 45,
+   "title": "Guided one-at-a-time with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-23T14:48:31.389+00:00"
+  },
+  {
+   "id": 46,
+   "title": "Guided one-at-a-time with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-24T12:50:55.101+00:00"
+  },
+  {
+   "id": 47,
+   "title": "One-at-a-time guided mode with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-08-24T13:06:54.842+00:00"
+  },
+  {
+   "id": 48,
+   "title": "Guided one-at-a-time with clickable choices",
+   "rule": "Guide this user one question at a time (Guided Mode): ask a single field per turn, and use clickable choice buttons wherever the answer is a small fixed or realistically-enumerable set, rather than asking for several fields at once.",
+   "active": 1,
+   "createdAt": "2026-09-08T17:39:37.884+00:00"
+  }
+ ],
+ "AppUser": [
+  {
+   "id": "cmumeospp00036g3m5vj8oxql",
+   "name": "Priya Sharma",
+   "email": null,
+   "roleType": "aor",
+   "brand": "Leqvio",
+   "createdAt": "2026-09-29T08:20:07.645+00:00",
+   "organization": "Ogilvy"
+  },
+  {
+   "id": "cmumeosq900046g3mlnsnbna3",
+   "name": "Naveen Iyer",
+   "email": null,
+   "roleType": "cdm",
+   "brand": "Leqvio",
+   "createdAt": "2026-09-29T08:20:07.665+00:00",
+   "organization": "Novartis"
+  },
+  {
+   "id": "cmumeosqy00056g3mp9ns5y2a",
+   "name": "Jordan Blake",
+   "email": null,
+   "roleType": "solutionArchitect",
+   "brand": "Leqvio",
+   "createdAt": "2026-09-29T08:20:07.690+00:00",
+   "organization": "Novartis"
+  },
+  {
+   "id": "cmumeosra00066g3meksjozo8",
+   "name": "Anita Rao",
+   "email": null,
+   "roleType": "mds",
+   "brand": "Leqvio",
+   "createdAt": "2026-09-29T08:20:07.702+00:00",
+   "organization": "Novartis"
+  },
+  {
+   "id": "cmumeosri00076g3makt77uh9",
+   "name": "Tomás Okafor",
+   "email": null,
+   "roleType": "cep",
+   "brand": "Leqvio",
+   "createdAt": "2026-09-29T08:20:07.710+00:00",
+   "organization": "Novartis"
+  },
+  {
+   "id": "cmumeosrt00086g3msc0mnknj",
+   "name": "Rahul Mehta",
+   "email": null,
+   "roleType": "oms",
+   "brand": "Leqvio",
+   "createdAt": "2026-09-29T08:20:07.721+00:00",
+   "organization": "Novartis"
+  },
+  {
+   "id": "cmumeossj00096g3m6tjsiw8w",
+   "name": "Lena Park",
+   "email": null,
+   "roleType": "cdm",
+   "brand": "Leqvio",
+   "createdAt": "2026-09-29T08:20:07.747+00:00",
+   "organization": "Novartis"
+  },
+  {
+   "id": "cmumeosst000a6g3mk17xy0x7",
+   "name": "Marco Diaz",
+   "email": null,
+   "roleType": "aor",
+   "brand": "Leqvio",
+   "createdAt": "2026-09-29T08:20:07.757+00:00",
+   "organization": "Havas"
+  },
+  {
+   "id": "cmumeost4000b6g3mvj0rm90e",
+   "name": "Emily Chen",
+   "email": null,
+   "roleType": "xm",
+   "brand": "Leqvio",
+   "createdAt": "2026-09-29T08:20:07.768+00:00",
+   "organization": "Novartis"
+  },
+  {
+   "id": "cmumeostj000c6g3mwdrxwbva",
+   "name": "Sam Wright",
+   "email": null,
+   "roleType": "dca",
+   "brand": "Leqvio",
+   "createdAt": "2026-09-29T08:20:07.783+00:00",
+   "organization": "Novartis"
+  },
+  {
+   "id": "demo_e27a95730ecb03f7",
+   "name": "Sofia Martins",
+   "email": null,
+   "roleType": "xm",
+   "brand": null,
+   "createdAt": "2026-09-29T12:04:35.697Z",
+   "organization": "Novartis"
+  },
+  {
+   "id": "demo_824caaefbb2dd319",
+   "name": "Daniel Kim",
+   "email": null,
+   "roleType": "xm",
+   "brand": null,
+   "createdAt": "2026-09-29T12:04:35.697Z",
+   "organization": "Novartis"
+  },
+  {
+   "id": "demo_9185f26298574ba6",
+   "name": "Grace Liu",
+   "email": null,
+   "roleType": "cdm",
+   "brand": null,
+   "createdAt": "2026-09-29T12:04:35.697Z",
+   "organization": "Novartis"
+  },
+  {
+   "id": "demo_06a43ff946efe231",
+   "name": "Omar Haddad",
+   "email": null,
+   "roleType": "cdm",
+   "brand": null,
+   "createdAt": "2026-09-29T12:04:35.697Z",
+   "organization": "Novartis"
+  },
+  {
+   "id": "demo_b64f492c2d436793",
+   "name": "Hannah Weiss",
+   "email": null,
+   "roleType": "ops",
+   "brand": null,
+   "createdAt": "2026-09-29T12:04:35.697Z",
+   "organization": "Novartis"
+  },
+  {
+   "id": "demo_ce30f85b4d9030b8",
+   "name": "Arjun Patel",
+   "email": null,
+   "roleType": "ops",
+   "brand": null,
+   "createdAt": "2026-09-29T12:04:35.697Z",
+   "organization": "Novartis"
+  },
+  {
+   "id": "demo_aee9b80a13ce088a",
+   "name": "Chloe Dubois",
+   "email": null,
+   "roleType": "solutionArchitect",
+   "brand": null,
+   "createdAt": "2026-09-29T12:04:35.697Z",
+   "organization": "Novartis"
+  },
+  {
+   "id": "demo_cb0138b8866ee693",
+   "name": "Ben Carter",
+   "email": null,
+   "roleType": "mds",
+   "brand": null,
+   "createdAt": "2026-09-29T12:04:35.697Z",
+   "organization": "Novartis"
+  },
+  {
+   "id": "demo_8f2121b0c6b894f0",
+   "name": "Isabel Romero",
+   "email": null,
+   "roleType": "cep",
+   "brand": null,
+   "createdAt": "2026-09-29T12:04:35.697Z",
+   "organization": "Novartis"
+  },
+  {
+   "id": "demo_316349b9eb3a927f",
+   "name": "Kenji Sato",
+   "email": null,
+   "roleType": "dca",
+   "brand": null,
+   "createdAt": "2026-09-29T12:04:35.697Z",
+   "organization": "Novartis"
+  },
+  {
+   "id": "demo_f6c28f8f6da0405b",
+   "name": "Laura Rossi",
+   "email": null,
+   "roleType": "aor",
+   "brand": null,
+   "createdAt": "2026-09-29T12:04:35.697Z",
+   "organization": "VML"
+  },
+  {
+   "id": "demo_785c7fad5ba6d902",
+   "name": "Mei Wong",
+   "email": null,
+   "roleType": "aor",
+   "brand": null,
+   "createdAt": "2026-09-29T12:04:35.697Z",
+   "organization": "McCann Health"
+  }
+ ],
+ "BrandContact": [
+  {
+   "id": 2,
+   "brand": "Leqvio",
+   "slot": "contentOwner",
+   "value": "cmumeost4000b6g3mvj0rm90e"
+  },
+  {
+   "id": 3,
+   "brand": "Leqvio",
+   "slot": "agency",
+   "value": "Ogilvy"
+  },
+  {
+   "id": 4,
+   "brand": "Leqvio",
+   "slot": "deliveryManager",
+   "value": "cmumeossj00096g3m6tjsiw8w"
+  },
+  {
+   "id": 5,
+   "brand": "Leqvio",
+   "slot": "solutionArchitect",
+   "value": "cmumeosqy00056g3mp9ns5y2a"
+  },
+  {
+   "id": 6,
+   "brand": "Leqvio",
+   "slot": "mds",
+   "value": "cmumeosra00066g3meksjozo8"
+  },
+  {
+   "id": 7,
+   "brand": "Leqvio",
+   "slot": "cep",
+   "value": "cmumeosri00076g3makt77uh9"
+  },
+  {
+   "id": 8,
+   "brand": "Leqvio",
+   "slot": "proofRecipients",
+   "value": "[\"cmumeosst000a6g3mk17xy0x7\",\"cmumeost4000b6g3mvj0rm90e\"]"
+  },
+  {
+   "id": 12,
+   "brand": "Leqvio",
+   "slot": "deliveryCoordinator",
+   "value": "demo_b64f492c2d436793"
+  },
+  {
+   "id": 16,
+   "brand": "Leqvio",
+   "slot": "tagging",
+   "value": "cmumeostj000c6g3mwdrxwbva"
+  },
+  {
+   "id": 18,
+   "brand": "Entresto",
+   "slot": "contentOwner",
+   "value": "cmumeost4000b6g3mvj0rm90e"
+  },
+  {
+   "id": 19,
+   "brand": "Entresto",
+   "slot": "agency",
+   "value": "Ogilvy"
+  },
+  {
+   "id": 20,
+   "brand": "Entresto",
+   "slot": "deliveryManager",
+   "value": "cmumeossj00096g3m6tjsiw8w"
+  },
+  {
+   "id": 21,
+   "brand": "Entresto",
+   "slot": "deliveryCoordinator",
+   "value": "demo_b64f492c2d436793"
+  },
+  {
+   "id": 22,
+   "brand": "Entresto",
+   "slot": "solutionArchitect",
+   "value": "cmumeosqy00056g3mp9ns5y2a"
+  },
+  {
+   "id": 23,
+   "brand": "Entresto",
+   "slot": "mds",
+   "value": "cmumeosra00066g3meksjozo8"
+  },
+  {
+   "id": 24,
+   "brand": "Entresto",
+   "slot": "cep",
+   "value": "cmumeosri00076g3makt77uh9"
+  },
+  {
+   "id": 25,
+   "brand": "Entresto",
+   "slot": "tagging",
+   "value": "cmumeostj000c6g3mwdrxwbva"
+  },
+  {
+   "id": 26,
+   "brand": "Entresto",
+   "slot": "proofRecipients",
+   "value": "[\"cmumeospp00036g3m5vj8oxql\",\"cmumeost4000b6g3mvj0rm90e\"]"
+  },
+  {
+   "id": 27,
+   "brand": "Kisqali",
+   "slot": "contentOwner",
+   "value": "demo_e27a95730ecb03f7"
+  },
+  {
+   "id": 28,
+   "brand": "Kisqali",
+   "slot": "agency",
+   "value": "Havas"
+  },
+  {
+   "id": 29,
+   "brand": "Kisqali",
+   "slot": "deliveryManager",
+   "value": "cmumeosq900046g3mlnsnbna3"
+  },
+  {
+   "id": 30,
+   "brand": "Kisqali",
+   "slot": "deliveryCoordinator",
+   "value": "demo_ce30f85b4d9030b8"
+  },
+  {
+   "id": 31,
+   "brand": "Kisqali",
+   "slot": "solutionArchitect",
+   "value": "demo_aee9b80a13ce088a"
+  },
+  {
+   "id": 32,
+   "brand": "Kisqali",
+   "slot": "mds",
+   "value": "demo_cb0138b8866ee693"
+  },
+  {
+   "id": 33,
+   "brand": "Kisqali",
+   "slot": "cep",
+   "value": "demo_8f2121b0c6b894f0"
+  },
+  {
+   "id": 34,
+   "brand": "Kisqali",
+   "slot": "tagging",
+   "value": "demo_316349b9eb3a927f"
+  },
+  {
+   "id": 35,
+   "brand": "Kisqali",
+   "slot": "proofRecipients",
+   "value": "[\"cmumeosst000a6g3mk17xy0x7\",\"demo_e27a95730ecb03f7\"]"
+  },
+  {
+   "id": 36,
+   "brand": "Pluvicto",
+   "slot": "contentOwner",
+   "value": "demo_e27a95730ecb03f7"
+  },
+  {
+   "id": 37,
+   "brand": "Pluvicto",
+   "slot": "agency",
+   "value": "Havas"
+  },
+  {
+   "id": 38,
+   "brand": "Pluvicto",
+   "slot": "deliveryManager",
+   "value": "cmumeosq900046g3mlnsnbna3"
+  },
+  {
+   "id": 39,
+   "brand": "Pluvicto",
+   "slot": "deliveryCoordinator",
+   "value": "demo_ce30f85b4d9030b8"
+  },
+  {
+   "id": 40,
+   "brand": "Pluvicto",
+   "slot": "solutionArchitect",
+   "value": "demo_aee9b80a13ce088a"
+  },
+  {
+   "id": 41,
+   "brand": "Pluvicto",
+   "slot": "mds",
+   "value": "demo_cb0138b8866ee693"
+  },
+  {
+   "id": 42,
+   "brand": "Pluvicto",
+   "slot": "cep",
+   "value": "demo_8f2121b0c6b894f0"
+  },
+  {
+   "id": 43,
+   "brand": "Pluvicto",
+   "slot": "tagging",
+   "value": "demo_316349b9eb3a927f"
+  },
+  {
+   "id": 44,
+   "brand": "Pluvicto",
+   "slot": "proofRecipients",
+   "value": "[\"cmumeosst000a6g3mk17xy0x7\",\"demo_e27a95730ecb03f7\"]"
+  },
+  {
+   "id": 45,
+   "brand": "Scemblix",
+   "slot": "contentOwner",
+   "value": "demo_e27a95730ecb03f7"
+  },
+  {
+   "id": 46,
+   "brand": "Scemblix",
+   "slot": "agency",
+   "value": "McCann Health"
+  },
+  {
+   "id": 47,
+   "brand": "Scemblix",
+   "slot": "deliveryManager",
+   "value": "demo_9185f26298574ba6"
+  },
+  {
+   "id": 48,
+   "brand": "Scemblix",
+   "slot": "deliveryCoordinator",
+   "value": "demo_ce30f85b4d9030b8"
+  },
+  {
+   "id": 49,
+   "brand": "Scemblix",
+   "slot": "solutionArchitect",
+   "value": "demo_aee9b80a13ce088a"
+  },
+  {
+   "id": 50,
+   "brand": "Scemblix",
+   "slot": "mds",
+   "value": "demo_cb0138b8866ee693"
+  },
+  {
+   "id": 51,
+   "brand": "Scemblix",
+   "slot": "cep",
+   "value": "demo_8f2121b0c6b894f0"
+  },
+  {
+   "id": 52,
+   "brand": "Scemblix",
+   "slot": "tagging",
+   "value": "demo_316349b9eb3a927f"
+  },
+  {
+   "id": 53,
+   "brand": "Scemblix",
+   "slot": "proofRecipients",
+   "value": "[\"demo_785c7fad5ba6d902\",\"demo_e27a95730ecb03f7\"]"
+  },
+  {
+   "id": 54,
+   "brand": "Tafinlar + Mekinist",
+   "slot": "contentOwner",
+   "value": "demo_e27a95730ecb03f7"
+  },
+  {
+   "id": 55,
+   "brand": "Tafinlar + Mekinist",
+   "slot": "agency",
+   "value": "McCann Health"
+  },
+  {
+   "id": 56,
+   "brand": "Tafinlar + Mekinist",
+   "slot": "deliveryManager",
+   "value": "demo_9185f26298574ba6"
+  },
+  {
+   "id": 57,
+   "brand": "Tafinlar + Mekinist",
+   "slot": "deliveryCoordinator",
+   "value": "demo_ce30f85b4d9030b8"
+  },
+  {
+   "id": 58,
+   "brand": "Tafinlar + Mekinist",
+   "slot": "solutionArchitect",
+   "value": "demo_aee9b80a13ce088a"
+  },
+  {
+   "id": 59,
+   "brand": "Tafinlar + Mekinist",
+   "slot": "mds",
+   "value": "demo_cb0138b8866ee693"
+  },
+  {
+   "id": 60,
+   "brand": "Tafinlar + Mekinist",
+   "slot": "cep",
+   "value": "demo_8f2121b0c6b894f0"
+  },
+  {
+   "id": 61,
+   "brand": "Tafinlar + Mekinist",
+   "slot": "tagging",
+   "value": "demo_316349b9eb3a927f"
+  },
+  {
+   "id": 62,
+   "brand": "Tafinlar + Mekinist",
+   "slot": "proofRecipients",
+   "value": "[\"demo_785c7fad5ba6d902\",\"demo_e27a95730ecb03f7\"]"
+  },
+  {
+   "id": 63,
+   "brand": "Lutathera",
+   "slot": "contentOwner",
+   "value": "demo_e27a95730ecb03f7"
+  },
+  {
+   "id": 64,
+   "brand": "Lutathera",
+   "slot": "agency",
+   "value": "Havas"
+  },
+  {
+   "id": 65,
+   "brand": "Lutathera",
+   "slot": "deliveryManager",
+   "value": "demo_9185f26298574ba6"
+  },
+  {
+   "id": 66,
+   "brand": "Lutathera",
+   "slot": "deliveryCoordinator",
+   "value": "demo_ce30f85b4d9030b8"
+  },
+  {
+   "id": 67,
+   "brand": "Lutathera",
+   "slot": "solutionArchitect",
+   "value": "demo_aee9b80a13ce088a"
+  },
+  {
+   "id": 68,
+   "brand": "Lutathera",
+   "slot": "mds",
+   "value": "demo_cb0138b8866ee693"
+  },
+  {
+   "id": 69,
+   "brand": "Lutathera",
+   "slot": "cep",
+   "value": "demo_8f2121b0c6b894f0"
+  },
+  {
+   "id": 70,
+   "brand": "Lutathera",
+   "slot": "tagging",
+   "value": "demo_316349b9eb3a927f"
+  },
+  {
+   "id": 71,
+   "brand": "Lutathera",
+   "slot": "proofRecipients",
+   "value": "[\"cmumeosst000a6g3mk17xy0x7\",\"demo_e27a95730ecb03f7\"]"
+  },
+  {
+   "id": 72,
+   "brand": "Cosentyx",
+   "slot": "contentOwner",
+   "value": "demo_824caaefbb2dd319"
+  },
+  {
+   "id": 73,
+   "brand": "Cosentyx",
+   "slot": "agency",
+   "value": "VML"
+  },
+  {
+   "id": 74,
+   "brand": "Cosentyx",
+   "slot": "deliveryManager",
+   "value": "demo_06a43ff946efe231"
+  },
+  {
+   "id": 75,
+   "brand": "Cosentyx",
+   "slot": "deliveryCoordinator",
+   "value": "demo_b64f492c2d436793"
+  },
+  {
+   "id": 76,
+   "brand": "Cosentyx",
+   "slot": "solutionArchitect",
+   "value": "cmumeosqy00056g3mp9ns5y2a"
+  },
+  {
+   "id": 77,
+   "brand": "Cosentyx",
+   "slot": "mds",
+   "value": "cmumeosra00066g3meksjozo8"
+  },
+  {
+   "id": 78,
+   "brand": "Cosentyx",
+   "slot": "cep",
+   "value": "demo_8f2121b0c6b894f0"
+  },
+  {
+   "id": 79,
+   "brand": "Cosentyx",
+   "slot": "tagging",
+   "value": "cmumeostj000c6g3mwdrxwbva"
+  },
+  {
+   "id": 80,
+   "brand": "Cosentyx",
+   "slot": "proofRecipients",
+   "value": "[\"demo_f6c28f8f6da0405b\",\"demo_824caaefbb2dd319\"]"
+  },
+  {
+   "id": 81,
+   "brand": "Xolair",
+   "slot": "contentOwner",
+   "value": "demo_824caaefbb2dd319"
+  },
+  {
+   "id": 82,
+   "brand": "Xolair",
+   "slot": "agency",
+   "value": "VML"
+  },
+  {
+   "id": 83,
+   "brand": "Xolair",
+   "slot": "deliveryManager",
+   "value": "demo_06a43ff946efe231"
+  },
+  {
+   "id": 84,
+   "brand": "Xolair",
+   "slot": "deliveryCoordinator",
+   "value": "demo_b64f492c2d436793"
+  },
+  {
+   "id": 85,
+   "brand": "Xolair",
+   "slot": "solutionArchitect",
+   "value": "cmumeosqy00056g3mp9ns5y2a"
+  },
+  {
+   "id": 86,
+   "brand": "Xolair",
+   "slot": "mds",
+   "value": "cmumeosra00066g3meksjozo8"
+  },
+  {
+   "id": 87,
+   "brand": "Xolair",
+   "slot": "cep",
+   "value": "demo_8f2121b0c6b894f0"
+  },
+  {
+   "id": 88,
+   "brand": "Xolair",
+   "slot": "tagging",
+   "value": "cmumeostj000c6g3mwdrxwbva"
+  },
+  {
+   "id": 89,
+   "brand": "Xolair",
+   "slot": "proofRecipients",
+   "value": "[\"demo_f6c28f8f6da0405b\",\"demo_824caaefbb2dd319\"]"
+  },
+  {
+   "id": 90,
+   "brand": "Fabhalta",
+   "slot": "contentOwner",
+   "value": "demo_824caaefbb2dd319"
+  },
+  {
+   "id": 91,
+   "brand": "Fabhalta",
+   "slot": "agency",
+   "value": "McCann Health"
+  },
+  {
+   "id": 92,
+   "brand": "Fabhalta",
+   "slot": "deliveryManager",
+   "value": "demo_9185f26298574ba6"
+  },
+  {
+   "id": 93,
+   "brand": "Fabhalta",
+   "slot": "deliveryCoordinator",
+   "value": "demo_b64f492c2d436793"
+  },
+  {
+   "id": 94,
+   "brand": "Fabhalta",
+   "slot": "solutionArchitect",
+   "value": "demo_aee9b80a13ce088a"
+  },
+  {
+   "id": 95,
+   "brand": "Fabhalta",
+   "slot": "mds",
+   "value": "demo_cb0138b8866ee693"
+  },
+  {
+   "id": 96,
+   "brand": "Fabhalta",
+   "slot": "cep",
+   "value": "cmumeosri00076g3makt77uh9"
+  },
+  {
+   "id": 97,
+   "brand": "Fabhalta",
+   "slot": "tagging",
+   "value": "demo_316349b9eb3a927f"
+  },
+  {
+   "id": 98,
+   "brand": "Fabhalta",
+   "slot": "proofRecipients",
+   "value": "[\"demo_785c7fad5ba6d902\",\"demo_824caaefbb2dd319\"]"
+  },
+  {
+   "id": 99,
+   "brand": "Kesimpta",
+   "slot": "contentOwner",
+   "value": "cmumeost4000b6g3mvj0rm90e"
+  },
+  {
+   "id": 100,
+   "brand": "Kesimpta",
+   "slot": "agency",
+   "value": "Ogilvy"
+  },
+  {
+   "id": 101,
+   "brand": "Kesimpta",
+   "slot": "deliveryManager",
+   "value": "demo_06a43ff946efe231"
+  },
+  {
+   "id": 102,
+   "brand": "Kesimpta",
+   "slot": "deliveryCoordinator",
+   "value": "demo_ce30f85b4d9030b8"
+  },
+  {
+   "id": 103,
+   "brand": "Kesimpta",
+   "slot": "solutionArchitect",
+   "value": "cmumeosqy00056g3mp9ns5y2a"
+  },
+  {
+   "id": 104,
+   "brand": "Kesimpta",
+   "slot": "mds",
+   "value": "demo_cb0138b8866ee693"
+  },
+  {
+   "id": 105,
+   "brand": "Kesimpta",
+   "slot": "cep",
+   "value": "cmumeosri00076g3makt77uh9"
+  },
+  {
+   "id": 106,
+   "brand": "Kesimpta",
+   "slot": "tagging",
+   "value": "cmumeostj000c6g3mwdrxwbva"
+  },
+  {
+   "id": 107,
+   "brand": "Kesimpta",
+   "slot": "proofRecipients",
+   "value": "[\"cmumeospp00036g3m5vj8oxql\",\"cmumeost4000b6g3mvj0rm90e\"]"
+  },
+  {
+   "id": 108,
+   "brand": "Zolgensma",
+   "slot": "contentOwner",
+   "value": "cmumeost4000b6g3mvj0rm90e"
+  },
+  {
+   "id": 109,
+   "brand": "Zolgensma",
+   "slot": "agency",
+   "value": "VML"
+  },
+  {
+   "id": 110,
+   "brand": "Zolgensma",
+   "slot": "deliveryManager",
+   "value": "demo_06a43ff946efe231"
+  },
+  {
+   "id": 111,
+   "brand": "Zolgensma",
+   "slot": "deliveryCoordinator",
+   "value": "demo_ce30f85b4d9030b8"
+  },
+  {
+   "id": 112,
+   "brand": "Zolgensma",
+   "slot": "solutionArchitect",
+   "value": "demo_aee9b80a13ce088a"
+  },
+  {
+   "id": 113,
+   "brand": "Zolgensma",
+   "slot": "mds",
+   "value": "cmumeosra00066g3meksjozo8"
+  },
+  {
+   "id": 114,
+   "brand": "Zolgensma",
+   "slot": "cep",
+   "value": "cmumeosri00076g3makt77uh9"
+  },
+  {
+   "id": 115,
+   "brand": "Zolgensma",
+   "slot": "tagging",
+   "value": "demo_316349b9eb3a927f"
+  },
+  {
+   "id": 116,
+   "brand": "Zolgensma",
+   "slot": "proofRecipients",
+   "value": "[\"demo_f6c28f8f6da0405b\",\"cmumeost4000b6g3mvj0rm90e\"]"
+  }
+ ],
+ "CampaignMeta": [],
+ "CampaignContact": [],
+ "TriggerFiring": [],
+ "CampaignEmail": [],
+ "JourneyTouchpoint": []
+}

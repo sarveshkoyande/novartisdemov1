@@ -1,0 +1,607 @@
+{
+  "meta": {
+    "purpose": "Source-backed demo schema for Codex",
+    "doNotInvent": true,
+    "knownConflicts": [
+      "Channel Type",
+      "Engagement Split Condition",
+      "Uses Data Cloud treatment"
+    ]
+  },
+  "fields": [
+    {
+      "id": "1",
+      "section": "Contact Details",
+      "field": "Content Owners/Marketing Strategy",
+      "owner": "DM",
+      "control": "User lookup, searchable, multi-select",
+      "rules": "Required; min 1 active user; auto-populate from Brand \u2192 Team mapping when available; DM can add/remove.",
+      "source": "Updated HQE Sheet row #1; PPT Slide 1 #1"
+    },
+    {
+      "id": "2",
+      "section": "Contact Details",
+      "field": "Agency Name",
+      "owner": "DM",
+      "control": "Single-select Agency master; Other may open free text",
+      "rules": "Required; auto-populate from Brand mapping when available.",
+      "source": "Updated HQE Sheet #2; PPT Slide 1 #2"
+    },
+    {
+      "id": "3",
+      "section": "Contact Details",
+      "field": "Delivery Manager",
+      "owner": "DM",
+      "control": "User lookup",
+      "rules": "Required; auto-populate from Brand \u2192 Team mapping when available; editable by DM.",
+      "source": "Updated HQE Sheet #3; PPT Slide 1 #3"
+    },
+    {
+      "id": "4",
+      "section": "Contact Details",
+      "field": "Delivery Coordinator / Project Manager",
+      "owner": "DM",
+      "control": "User lookup",
+      "rules": "Required; auto-populate from Brand \u2192 Team mapping when available; editable by DM.",
+      "source": "Updated HQE Sheet #4; PPT Slide 1 #4"
+    },
+    {
+      "id": "5",
+      "section": "Contact Details",
+      "field": "Solution Architect",
+      "owner": "DM",
+      "control": "User lookup",
+      "rules": "Required; auto-populate from Brand \u2192 Team mapping when available; editable by DM.",
+      "source": "Updated HQE Sheet #5; PPT Slide 1 #5"
+    },
+    {
+      "id": "6",
+      "section": "Contact Details",
+      "field": "MDS",
+      "owner": "DM",
+      "control": "User lookup",
+      "rules": "Required; auto-populate from Brand \u2192 Team mapping when available; editable by DM.",
+      "source": "Updated HQE Sheet #6; PPT Slide 1 #6"
+    },
+    {
+      "id": "7",
+      "section": "Contact Details",
+      "field": "CEP",
+      "owner": "DM",
+      "control": "User lookup",
+      "rules": "Required; auto-populate from Brand \u2192 Team mapping when available; editable by DM.",
+      "source": "Updated HQE Sheet #7; PPT Slide 1 #7"
+    },
+    {
+      "id": "8",
+      "section": "Contact Details",
+      "field": "Tagging",
+      "owner": "DM",
+      "control": "User lookup",
+      "rules": "Required; auto-populate from Brand \u2192 Team mapping when available; editable by DM.",
+      "source": "Updated HQE Sheet #8; PPT Slide 1 #8"
+    },
+    {
+      "id": "9",
+      "section": "Contact Details",
+      "field": "Proof Recipients",
+      "owner": "DM",
+      "control": "Multi-value email chips",
+      "rules": "Required; 1\u201320 valid emails; no duplicates.",
+      "source": "Updated HQE Sheet #9; PPT Slide 1 #9"
+    },
+    {
+      "id": "10",
+      "section": "General Campaign Details",
+      "field": "TACTPlan ID",
+      "owner": "DM",
+      "control": "Text / alphanumeric ID",
+      "rules": "Manual input from another system; required; do not generate in demo.",
+      "source": "Updated HQE Sheet #10; transcript ~49:36\u201350:07"
+    },
+    {
+      "id": "11",
+      "section": "General Campaign Details",
+      "field": "Channel Type",
+      "owner": "DM",
+      "control": "SOURCE CONFLICT",
+      "rules": "PPT says HQE or SMS. Updated sheet says multi-select HQE/SMS with at least one. Keep flagged.",
+      "source": "PPT Slide 1 #11; Updated HQE Sheet #11"
+    },
+    {
+      "id": "12",
+      "section": "General Campaign Details",
+      "field": "Request Type",
+      "owner": "DM",
+      "control": "Single-select",
+      "rules": "Values in updated sheet: New Brand Launch; New Indication Launch; Update Existing Campaign.",
+      "source": "Updated HQE Sheet #12"
+    },
+    {
+      "id": "13",
+      "section": "General Campaign Details",
+      "field": "New Brand?",
+      "owner": "DM",
+      "control": "Yes/No",
+      "rules": "Auto-set Yes when Request Type = New Brand Launch; Yes triggers OMS path.",
+      "source": "Updated HQE Sheet #13; PPT Slide 1"
+    },
+    {
+      "id": "14",
+      "section": "General Campaign Details",
+      "field": "Brand",
+      "owner": "DM",
+      "control": "Searchable Brand master / text for New Brand",
+      "rules": "Existing brand from master; New Brand free text.",
+      "source": "Updated HQE Sheet #14; PPT Slide 1"
+    },
+    {
+      "id": "15",
+      "section": "General Campaign Details",
+      "field": "Indication",
+      "owner": "DM",
+      "control": "Dependent dropdown / text for new indication",
+      "rules": "Filtered by Brand; new indication/new brand may use free text.",
+      "source": "Updated HQE Sheet #15; PPT Slide 1"
+    },
+    {
+      "id": "16",
+      "section": "General Campaign Details",
+      "field": "Therapeutic Area",
+      "owner": "DM",
+      "control": "Auto-populated / master for New Brand",
+      "rules": "Auto-fill from Brand/Indication mapping when available; New Brand can select from master.",
+      "source": "Updated HQE Sheet #16; PPT Slide 1"
+    },
+    {
+      "id": "17",
+      "section": "General Campaign Details",
+      "field": "Branded / Unbranded",
+      "owner": "DM",
+      "control": "Radio",
+      "rules": "Required; default from Brand mapping where available.",
+      "source": "Updated HQE Sheet #17; PPT Slide 1"
+    },
+    {
+      "id": "18",
+      "section": "General Campaign Details",
+      "field": "Audience Type",
+      "owner": "DM",
+      "control": "Audience master",
+      "rules": "Required; DTC enables enrolment/survey logic.",
+      "source": "Updated HQE Sheet #18; PPT Slide 1"
+    },
+    {
+      "id": "19",
+      "section": "General Campaign Details",
+      "field": "Campaign Code",
+      "owner": "DM",
+      "control": "Text / read-only pending OMS for New Brand",
+      "rules": "Required existing brand; New Brand waits for OMS. Updated sheet: exactly 8 digits numeric unique.",
+      "source": "Updated HQE Sheet #19; PPT Slide 1"
+    },
+    {
+      "id": "20",
+      "section": "General Campaign Details",
+      "field": "Send Time Optimization",
+      "owner": "DM",
+      "control": "Yes/No",
+      "rules": "Default No; Yes reveals 20.1 and 20.2 inline.",
+      "source": "Updated HQE Sheet #20; PPT Slide 1"
+    },
+    {
+      "id": "20.1",
+      "section": "General Campaign Details",
+      "field": "Sending Time Window",
+      "owner": "DM",
+      "control": "Time range + timezone",
+      "rules": "Required if STO = Yes.",
+      "source": "Updated HQE Sheet #20.1; PPT Slide 1"
+    },
+    {
+      "id": "20.2",
+      "section": "General Campaign Details",
+      "field": "STO Random",
+      "owner": "DM",
+      "control": "Dropdown / number",
+      "rules": "Required if STO = Yes.",
+      "source": "Updated HQE Sheet #20.2; PPT Slide 1"
+    },
+    {
+      "id": "21",
+      "section": "AoR Campaign Details",
+      "field": "Campaign Name",
+      "owner": "AoR",
+      "control": "Text",
+      "rules": "Required.",
+      "source": "Updated HQE Sheet #21; PPT Slide 1"
+    },
+    {
+      "id": "22",
+      "section": "AoR Campaign Details",
+      "field": "Campaign Type",
+      "owner": "AoR",
+      "control": "Single-select",
+      "rules": "Updated sheet values: Ad Hoc; Cadenced; Real-time; Real-time & Cadenced; Model based. Model based hidden SMS-only.",
+      "source": "Updated HQE Sheet #22; PPT Slide 1"
+    },
+    {
+      "id": "22.1",
+      "section": "AoR Campaign Details",
+      "field": "Has Enrolment Form?",
+      "owner": "AoR",
+      "control": "Yes/No",
+      "rules": "Default No; Yes reveals Survey Sheet Available.",
+      "source": "Updated HQE Sheet #22.1; PPT Slide 1"
+    },
+    {
+      "id": "22.2",
+      "section": "AoR Campaign Details",
+      "field": "Is Survey Sheet Available?",
+      "owner": "AoR",
+      "control": "Yes/No",
+      "rules": "Required if enrolment form = Yes. No + DTC triggers OMS metadata dependency.",
+      "source": "Updated HQE Sheet #22.2; PPT Slide 1"
+    },
+    {
+      "id": "22.3",
+      "section": "AoR Campaign Details",
+      "field": "Attach Survey Sheet",
+      "owner": "AoR / OMS dependency",
+      "control": "File upload",
+      "rules": "When available; xlsx/xls/csv per updated sheet.",
+      "source": "Updated HQE Sheet #22.3; PPT Slide 1"
+    },
+    {
+      "id": "23",
+      "section": "AoR Campaign Details",
+      "field": "Campaign Goal",
+      "owner": "AoR",
+      "control": "Text area",
+      "rules": "Required.",
+      "source": "Updated HQE Sheet #23; PPT Slide 1"
+    },
+    {
+      "id": "24",
+      "section": "AoR Campaign Details",
+      "field": "Number of Emails",
+      "owner": "AoR",
+      "control": "Integer",
+      "rules": "Required if Channel includes HQE; drives number of Email Detail sections.",
+      "source": "Updated HQE Sheet #24; PPT Slide 1"
+    },
+    {
+      "id": "24.1",
+      "section": "AoR Campaign Details",
+      "field": "Number of SMS",
+      "owner": "AoR",
+      "control": "Integer",
+      "rules": "Required if Channel includes SMS.",
+      "source": "Updated HQE Sheet #24.1"
+    },
+    {
+      "id": "25",
+      "section": "AoR Campaign Details",
+      "field": "Desired Campaign Go-Live",
+      "owner": "AoR",
+      "control": "Date",
+      "rules": "Required.",
+      "source": "Updated HQE Sheet #25; PPT Slide 1"
+    },
+    {
+      "id": "26",
+      "section": "AoR Campaign Details",
+      "field": "From Name / Friendly From",
+      "owner": "AoR",
+      "control": "Approved Sender Profile master",
+      "rules": "Required; no free text per updated sheet.",
+      "source": "Updated HQE Sheet #26; PPT Slide 1"
+    },
+    {
+      "id": "27",
+      "section": "AoR Campaign Details",
+      "field": "Segment Name",
+      "owner": "AoR",
+      "control": "Text",
+      "rules": "Required.",
+      "source": "Updated HQE Sheet #27; PPT Slide 1"
+    },
+    {
+      "id": "28",
+      "section": "Audience Rules",
+      "field": "Segment Rules",
+      "owner": "DM through XM/MS",
+      "control": "Text area",
+      "rules": "Required.",
+      "source": "Updated HQE Sheet #28; PPT Slide 1"
+    },
+    {
+      "id": "29",
+      "section": "Audience Rules",
+      "field": "Specialty Inclusion",
+      "owner": "DM through XM/MS",
+      "control": "Multi-select Specialty master",
+      "rules": "Optional; must not overlap Exclusion.",
+      "source": "Updated HQE Sheet #29; PPT Slide 1"
+    },
+    {
+      "id": "30",
+      "section": "Audience Rules",
+      "field": "Specialty Exclusion",
+      "owner": "DM through XM/MS",
+      "control": "Multi-select Specialty master",
+      "rules": "Optional; must not overlap Inclusion.",
+      "source": "Updated HQE Sheet #30; PPT Slide 1"
+    },
+    {
+      "id": "31",
+      "section": "Audience Rules",
+      "field": "User Exit Criteria for Campaign Journey",
+      "owner": "DM through XM/MS",
+      "control": "Text area",
+      "rules": "Required. General Campaign Details complete/verified triggers initial flow creation + SA and MDS/Data360 notifications.",
+      "source": "Updated HQE Sheet #31; PPT Slide 1 Trigger C"
+    },
+    {
+      "id": "32",
+      "section": "Email Details",
+      "field": "FUSE ID / Content ID",
+      "owner": "AoR/DM",
+      "control": "Text",
+      "rules": "Required; manual/external; no assumed integration.",
+      "source": "Updated HQE Sheet #32; PPT Slide 2"
+    },
+    {
+      "id": "33",
+      "section": "Email Details",
+      "field": "FUSE Expiration Date",
+      "owner": "AoR/DM",
+      "control": "Date",
+      "rules": "Required.",
+      "source": "Updated HQE Sheet #33; PPT Slide 2"
+    },
+    {
+      "id": "34",
+      "section": "Email Details",
+      "field": "FUSE Approved Date",
+      "owner": "AoR/DM",
+      "control": "Date",
+      "rules": "Required; year feeds HQE Metadata Matrix.",
+      "source": "Updated HQE Sheet #34; PPT Slide 2"
+    },
+    {
+      "id": "35",
+      "section": "Email Details",
+      "field": "Retirement Date",
+      "owner": "AoR/DM",
+      "control": "Date",
+      "rules": "Optional.",
+      "source": "Updated HQE Sheet #35; PPT Slide 2"
+    },
+    {
+      "id": "36",
+      "section": "Email Details",
+      "field": "Email Name",
+      "owner": "AoR/DM",
+      "control": "Text",
+      "rules": "Required; feeds Touchpoint Name.",
+      "source": "Updated HQE Sheet #36; PPT Slide 2"
+    },
+    {
+      "id": "37",
+      "section": "Email Details",
+      "field": "Email Deploy Date",
+      "owner": "AoR/DM",
+      "control": "Date",
+      "rules": "Required.",
+      "source": "Updated HQE Sheet #37; PPT Slide 2"
+    },
+    {
+      "id": "38",
+      "section": "Email Details",
+      "field": "Personalization",
+      "owner": "AoR/DM",
+      "control": "Yes/No",
+      "rules": "Yes reveals 38.1 inline.",
+      "source": "Updated HQE Sheet #38; PPT Slide 2"
+    },
+    {
+      "id": "38.1",
+      "section": "Email Details",
+      "field": "Personalization Area / Field Name & Criteria",
+      "owner": "AoR/DM",
+      "control": "Text area",
+      "rules": "Required if Personalization = Yes.",
+      "source": "Updated HQE Sheet #38.1; PPT Slide 2"
+    },
+    {
+      "id": "39",
+      "section": "Email Details",
+      "field": "Subject Line",
+      "owner": "AoR/DM",
+      "control": "Repeatable text",
+      "rules": "Minimum 1; allow multiple.",
+      "source": "Updated HQE Sheet #39; PPT Slide 2"
+    },
+    {
+      "id": "40",
+      "section": "Email Details",
+      "field": "Pre Header",
+      "owner": "AoR/DM",
+      "control": "Repeatable text",
+      "rules": "Minimum 1; allow multiple.",
+      "source": "Updated HQE Sheet #40; PPT Slide 2"
+    },
+    {
+      "id": "41",
+      "section": "Email Details",
+      "field": "Theme",
+      "owner": "AoR/DM",
+      "control": "Text",
+      "rules": "Optional. Source trigger notes HQE matrix when email details reach source-defined completion condition.",
+      "source": "Updated HQE Sheet #41; PPT Slide 2"
+    },
+    {
+      "id": "42",
+      "section": "Email Details",
+      "field": "Behavior Chain",
+      "owner": "AoR/DM",
+      "control": "Text area",
+      "rules": "Optional.",
+      "source": "Updated HQE Sheet #42; PPT Slide 2"
+    },
+    {
+      "id": "43",
+      "section": "Email Details",
+      "field": "A/B Testing Required?",
+      "owner": "AoR/DM",
+      "control": "Yes/No",
+      "rules": "Yes reveals 43.1\u201343.4 inline.",
+      "source": "Updated HQE Sheet #43; PPT Slide 2"
+    },
+    {
+      "id": "43.1",
+      "section": "Email Details",
+      "field": "Approximate Audience Size",
+      "owner": "AoR/DM",
+      "control": "Integer",
+      "rules": "Required if A/B Testing = Yes.",
+      "source": "Updated HQE Sheet #43.1; PPT Slide 2"
+    },
+    {
+      "id": "43.2",
+      "section": "Email Details",
+      "field": "Test Split",
+      "owner": "AoR/DM",
+      "control": "Dropdown/custom %",
+      "rules": "Required if A/B Testing = Yes; percentages total 100.",
+      "source": "Updated HQE Sheet #43.2; PPT Slide 2"
+    },
+    {
+      "id": "43.3",
+      "section": "Email Details",
+      "field": "Test Send",
+      "owner": "AoR/DM",
+      "control": "Dropdown + optional duration",
+      "rules": "Required if A/B Testing = Yes.",
+      "source": "Updated HQE Sheet #43.3; PPT Slide 2"
+    },
+    {
+      "id": "43.4",
+      "section": "Email Details",
+      "field": "Metadata IDs to A/B Test",
+      "owner": "AoR/DM",
+      "control": "Generated Metadata ID multi-select",
+      "rules": "Required if A/B Testing = Yes.",
+      "source": "Updated HQE Sheet #43.4; PPT Slide 2"
+    },
+    {
+      "id": "44",
+      "section": "Email Details",
+      "field": "Asset Handoff",
+      "owner": "AoR/DM",
+      "control": "Yes/No",
+      "rules": "Yes reveals 44.1\u201344.3.",
+      "source": "Updated HQE Sheet #44"
+    },
+    {
+      "id": "44.1",
+      "section": "Email Details",
+      "field": "Content Brief",
+      "owner": "AoR/DM",
+      "control": "File upload",
+      "rules": "Optional when Asset Handoff = Yes; source trigger hands content brief to Studio where applicable.",
+      "source": "Updated HQE Sheet #44.1; PPT Slide 2"
+    },
+    {
+      "id": "44.2",
+      "section": "Email Details",
+      "field": "MAP Verified / Approved PDF",
+      "owner": "AoR/DM",
+      "control": "File upload",
+      "rules": "Required if Asset Handoff = Yes.",
+      "source": "Updated HQE Sheet #44.2; PPT Slide 2"
+    },
+    {
+      "id": "44.3",
+      "section": "Email Details",
+      "field": "Source File ZIP",
+      "owner": "AoR/DM",
+      "control": "File upload",
+      "rules": "Required if Asset Handoff = Yes.",
+      "source": "Updated HQE Sheet #44.3; PPT Slide 2"
+    },
+    {
+      "id": "45",
+      "section": "Touchpoint Details",
+      "field": "Touchpoint Type",
+      "owner": "AoR/DM",
+      "control": "Read-only",
+      "rules": "Auto from Channel Type.",
+      "source": "Updated HQE Sheet #45; PPT Slide 3"
+    },
+    {
+      "id": "46",
+      "section": "Touchpoint Details",
+      "field": "Touchpoint Name",
+      "owner": "AoR/DM",
+      "control": "Read-only",
+      "rules": "Auto from Email Name (#36).",
+      "source": "Updated HQE Sheet #46; PPT Slide 3 numbering is inconsistent"
+    },
+    {
+      "id": "47",
+      "section": "Touchpoint Details",
+      "field": "A/B Testing",
+      "owner": "AoR/DM",
+      "control": "Read-only",
+      "rules": "Auto from Email A/B Testing.",
+      "source": "Updated HQE Sheet #47; PPT Slide 3"
+    },
+    {
+      "id": "48",
+      "section": "Touchpoint Details",
+      "field": "Wait Time (before next)",
+      "owner": "AoR/DM",
+      "control": "Number + Hours/Days",
+      "rules": "Required except last touchpoint.",
+      "source": "Updated HQE Sheet #48; PPT Slide 3"
+    },
+    {
+      "id": "49",
+      "section": "Touchpoint Details",
+      "field": "Resend Needed?",
+      "owner": "AoR/DM",
+      "control": "Yes/No",
+      "rules": "Yes reveals engagement condition inline.",
+      "source": "Updated HQE Sheet #49; PPT Slide 3"
+    },
+    {
+      "id": "49.1",
+      "section": "Touchpoint Details",
+      "field": "Engagement Split Condition",
+      "owner": "AoR/DM",
+      "control": "SOURCE CONFLICT",
+      "rules": "PPT references open/click; updated sheet provides more specific options + wait days. Keep flagged.",
+      "source": "Updated HQE Sheet #49.1; PPT Slide 3"
+    },
+    {
+      "id": "50",
+      "section": "Data Configuration",
+      "field": "Data Full Refresh or Incremental",
+      "owner": "DM/SA",
+      "control": "Full Refresh / Incremental",
+      "rules": "Required; suggested from Campaign Type, editable by DM/SA.",
+      "source": "Updated HQE Sheet #50; PPT Slide 3"
+    },
+    {
+      "id": "51",
+      "section": "Data Configuration",
+      "field": "Refresh Frequency",
+      "owner": "DM/SA",
+      "control": "Dropdown",
+      "rules": "Required if Campaign Type is Cadenced or Real-time; updated sheet suggests Daily/Weekly/Monthly/Custom.",
+      "source": "Updated HQE Sheet #51; PPT Slide 3"
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+CAMPAIGN KICK-OFF NOTES — DEMO DATA (not real Novartis data)
+Meeting: Cosentyx PsO awareness email programme
+
+GENERAL CAMPAIGN DETAILS
+TACTPlan ID: TP-84512
+Request Type: Update Existing Campaign
+Brand: Cosentyx
+Indication: Plaque psoriasis
+Therapeutic Area: Immunology
+Branded / Unbranded: Branded
+Channel Type: HQE
+Audience Type: DTC
+Campaign Code: 40182736
+Campaign Name: Cosentyx PsO Awareness Q1 2027
+Campaign Type: Ad Hoc
+Campaign Goal: Raise awareness of Cosentyx among adults with moderate-to-severe plaque psoriasis and drive sign-ups to the patient support programme.
+Send Time Optimization: No
+Has Enrolment Form?: No
+Number of Emails: 2
+Desired Campaign Go-Live: 2027-01-18
+From Name / Friendly From: Demo Sender Profile A
+Segment Name: PsO Bio Naive
+Segment Rules: Adults 18+ opted in to Novartis communications, diagnosed with plaque psoriasis, no biologic in the last 12 months.
+Specialty Inclusion: Dermatology
+Specialty Exclusion: Oncology
+User Exit Criteria for Campaign Journey: Exit when the user unsubscribes, enrols in the patient support programme, or completes both emails.
+
+PROJECT TEAM (CONTACT DETAILS)
+Content Owners/Marketing Strategy: Demo Content Owner
+Agency Name: Demo Agency
+Delivery Manager: Anna Meier
+Delivery Coordinator / Project Manager: Demo Delivery Coordinator
+Solution Architect: Demo Solution Architect
+MDS: Demo MDS Contributor
+CEP: Demo CEP Contributor
+Tagging: Demo Tagging Contributor
+Proof Recipients: anna.meier@example.com, review.team@example.com
+
+EMAIL 01
+FUSE ID / Content ID: FUSE-100231
+FUSE Approved Date: 2026-12-01
+FUSE Expiration Date: 2027-12-01
+Email Name: Welcome to clearer skin
+Email Deploy Date: 2027-01-18
+Personalization: No
+Subject Line: Clearer skin could start here
+Pre Header: Learn how Cosentyx may help with plaque psoriasis
+A/B Testing Required?: No
+Asset Handoff: No
+
+EMAIL 02
+FUSE ID / Content ID: FUSE-100232
+FUSE Approved Date: 2026-12-01
+FUSE Expiration Date: 2027-12-01
+Email Name: Support is here for you
+Email Deploy Date: 2027-01-25
+Personalization: No
+Subject Line: Your support programme is ready
+Pre Header: Sign up for nurse support and savings information
+A/B Testing Required?: No
+Asset Handoff: No
+
+TOUCHPOINTS
+Touchpoint 01: Wait Time (before next) is 7 days. Resend Needed? No.
+Touchpoint 02: Resend Needed? No.

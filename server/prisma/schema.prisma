@@ -1,0 +1,416 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// Stand-in for a real brand-master feed (TactPlan/MDS) â€” backs the New
+// Campaign Request modal's Brand/Indication search-and-autofill and the
+// Asset Scope inference (brand+indication already here => not a new launch).
+model BrandIndication {
+  id               Int    @id @default(autoincrement())
+  brand            String
+  indication       String
+  brandedUnbranded String
+  therapeuticArea  String @default("")
+
+  @@unique([brand, indication])
+}
+
+// The admin-managed user directory (separate from the demo login personas
+// in client/personas.ts) â€” every real stakeholder type, not just XM/CDM.
+// organization replaces the earlier separate Agency/AgencyBrandAccess
+// many-to-many models: per direct instruction, that was redundant with this
+// table (a user's own organization plus their one mapped brand already
+// says who has access to what â€” a second access-list model was accounting
+// for the same fact twice). brand stays a plain nullable column (not a
+// junction table) because the mapping is one user to at most one brand.
+model AppUser {
+  id           String   @id @default(cuid())
+  name         String
+  email        String?
+  roleType     String // aor | xm | mds | cep | ops | dca | oms | solutionArchitect | cdm
+  organization String? // e.g. "Ogilvy", "Novartis" â€” free text, not a managed list
+  brand        String? // the one brand this user is mapped to; null = unassigned
+  createdAt    DateTime @default(now())
+}
+
+// Every field value actually entered in the requirement-gathering form,
+// persisted so the chat agent can answer questions about already-entered
+// data via tool calling (get_entries) instead of only ever proposing new
+// fills. Tagged by phase (preplan/plan/exec) in its own column, per request â€”
+// callers query/filter by stage directly rather than needing a join.
+model FieldEntry {
+  id         Int      @id @default(autoincrement())
+  tactplanId String
+  sectionId  String
+  sectionName String
+  phase      String   // "preplan" | "plan" | "exec"
+  fieldId    String
+  fieldLabel String
+  value      String
+  updatedAt  DateTime @updatedAt
+
+  @@unique([tactplanId, sectionId, fieldId])
+  @@index([tactplanId, phase])
+}
+
+// Whether a section has been submitted (and is therefore locked read-only).
+// Values already survive a reload via FieldEntry above, but lock state used to
+// live only in an in-memory Set, so reloading silently unlocked every section
+// and the form disagreed with itself across a refresh. One row per section per
+// request, same keying as FieldEntry.
+model SectionState {
+  id         Int      @id @default(autoincrement())
+  tactplanId String
+  sectionId  String
+  submitted  Boolean  @default(false)
+  updatedAt  DateTime @updatedAt
+
+  @@unique([tactplanId, sectionId])
+}
+
+// A persisted behavioral correction â€” govex's skill-authoring pattern
+// (lib/skillAuthoring.ts / CustomSkill), scoped to "how the agent should
+// behave" rather than campaign data. The agent itself decides when a
+// message is a correction worth learning (learn_skill tool in server.js),
+// not a hardcoded keyword trigger â€” the model evaluates intent. Every active
+// skill's rule text gets folded into the system prompt on every subsequent
+// turn, so a correction made once actually sticks going forward.
+model AgentSkill {
+  id        Int      @id @default(autoincrement())
+  title     String
+  rule      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+// A named form/flow â€” the layer above sections, requested by the customer
+// so future flows (FormB, FormC, ...) don't have to be shoehorned into the
+// one hardcoded requirement-gathering structure. Each FormSection now
+// belongs to exactly one Form (independent section pools per form, not a
+// shared pool with subsets â€” simpler mental model, and admin manages one
+// Form's sections at a time same as today). The existing 12 sections were
+// migrated into one default Form ("Requirement Gathering Form") so nothing
+// about existing requests changes; new Forms show up as additional options
+// in the New Campaign Request modal's "Which form?" picker.
+model Form {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  active      Boolean       @default(true)
+  order       Int
+  sections    FormSection[]
+}
+
+// The form's structure itself, finally in the database instead of a
+// hardcoded JS array (BASE_SECTIONS) baked into the frontend. Mirrors that
+// array's shape field-for-field so the migration script is a mechanical
+// port, not a redesign â€” see prisma/migrate-sections-from-html.js. Per-
+// tactic/touchpoint fan-out (Email #1, Touch Point #2, ...) stays computed
+// in the client at render time; it's inherently dynamic per campaign, not
+// static admin-editable data.
+model FormSection {
+  id           String      @id // e.g. "generic", "email", "mds" â€” matches the existing section id scheme
+  formId       String
+  form         Form        @relation(fields: [formId], references: [id], onDelete: Cascade)
+  num          String
+  name         String
+  icon         String
+  parentId     String?     // touchpoint/tactic nesting parent, if any
+  audienceGate Boolean     @default(false)
+  note         String?
+  needsJson    String      // {"preplan":["aor"],"plan":["aor","xm"],"exec":[]}
+  order        Int
+  fields       FormField[]
+
+  @@index([formId])
+}
+
+model FormField {
+  id               String      @id @default(cuid())
+  sectionId        String
+  section          FormSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  fieldKey         String      // "1.1.3" â€” the existing field id scheme, preserved verbatim
+  phase            String      // "preplan" | "plan" | "exec"
+  label            String
+  type             String      // text | ta | sel | multi | date | file | metasheet
+  owner            String      // aor | xm | mds | cep | ops | dca
+  bucket           String?
+  source           String?
+  optionsJson      String?     // JSON array, for type=sel
+  condJson         String?     // e.g. {"audience":"hcp"}
+  drives           String?
+  cascadeFromField String?
+  // Source this field's value can be inferred from, so the interview never asks
+  // for something already answered elsewhere. Holds the source field's
+  // fieldKey ("1.1.3"). Distinct from cascadeFromField: that one mirrors live
+  // and is excluded from every count, whereas a derived value is only ever
+  // PROPOSED (one batch, one Confirm) and becomes a normal editable value once
+  // accepted â€” the client requires defaults be approved, not silently applied.
+  // For metasheet sub-fields the target is addressed as "Group label: Field".
+  derivesFrom      String?
+  locked           Boolean     @default(false)
+  lockedValue      String?
+  wide             Boolean     @default(false)
+  groupsJson       String?     // type=metasheet only â€” the [{label,fields:[...]}] group structure (e.g. CMA's 10 groups / 45 sub-fields), preserved verbatim so the live form can still render it once sourced from this table instead of BASE_SECTIONS
+  order            Int
+
+  @@index([sectionId])
+}
+
+// CRF #N per-tactic field templates â€” Email/SMS/MDS Suppression/Automatrix/
+// Touch Point content, one row per template field, previously 100% hardcoded
+// in the client's emailTacticSection()/smsTacticSection()/mdsTacticSection()/
+// automxTacticSection()/touchpointSection() generator functions. `fieldKey`/
+// `cascadeFromField` keep the literal placeholder "{n}" wherever the
+// generator interpolated `${crfGroup}` â€” the client substitutes the real
+// tactic number in at render time. Not folded into FormField because these
+// rows don't belong to one FormSection; they belong to a tactic *type* that
+// fans out into N real sections (email-t1, email-t2, ...) per campaign.
+model TacticFieldTemplate {
+  id               String  @id @default(cuid())
+  tacticType       String  // "email" | "sms" | "mds" | "automx" | "touchpoint"
+  fieldKey         String  // e.g. "1.6.t{n}.1"
+  phase            String  // preplan | plan | exec
+  label            String
+  type             String
+  owner            String
+  bucket           String?
+  source           String?
+  optionsJson      String?
+  condJson         String? // e.g. {"logic":"and","rules":[{"key":"audience","value":"hcp"}]} â€” this is where MDS Suppression's real audience gating lives
+  drives           String?
+  cascadeFromField String?
+  locked           Boolean @default(false)
+  lockedValue      String?
+  wide             Boolean @default(false)
+  order            Int
+
+  @@index([tacticType])
+}
+
+// Campaign Ops' planning timeline for one request â€” an ETA date per
+// milestone, set from the new "Plan" tab (Campaign Ops' own view, distinct
+// from the AOR/XM-facing requirement-gathering form). Dates are plain
+// "YYYY-MM-DD" strings, same convention as every other date field/input in
+// this app (see BASE_SECTIONS' type:"date" fields) rather than DateTime, to
+// avoid timezone round-tripping since these are date-only, no time-of-day.
+model PlanMilestone {
+  id           Int      @id @default(autoincrement())
+  tactplanId   String   @unique
+  discoveryEta String?  // Discovery session
+  cpfEta       String?  // CPF (pre-planning) completion
+  crfEta       String?  // CRF (tactic build) completion
+  updatedAt    DateTime @updatedAt
+}
+
+// Standardizes what used to be scattered hardcoded branches in
+// runReactCheckpoint() (hqe-requirement-studio-mock_2.html) â€” which section
+// submits nudge whom, and what "phase complete" (e.g. "CPF complete") even
+// means â€” into real, admin-editable rows. See evaluateNudgeRules() (client)
+// for how these get matched and fired.
+model NudgeRule {
+  id                 String   @id @default(cuid())
+  trigger            String   // "section_submitted" | "phase_complete" | "field_value_equals" | "section_group_complete" | "fields_remaining"
+  triggerSectionId   String?  // for section_submitted, fields_remaining (section holding the metasheet field)
+  triggerPhase       String?  // for phase_complete / section_group_complete (preplan|plan|exec) â€” this is literally "how CPF completion is defined"
+  triggerFieldDrives String?  // for field_value_equals â€” a FormField.drives key, e.g. "assetScope"
+  triggerValue       String?  // for field_value_equals â€” the value that fires it, e.g. "newbrand"
+  triggerSectionIds  String?  // for section_group_complete â€” JSON array of section ids, e.g. ["generic","oms","cma"]
+  triggerFieldKey    String?  // for fields_remaining â€” the metasheet FormField.fieldKey, e.g. "1.4.6"
+  conditionsJson     String?  // optional extra AND-gate on top of any trigger, {"logic":"and","rules":[{"key":"enrollment","value":"Yes"}]} â€” evaluated against campaignConfig
+  message            String   // the major-change message text â€” may contain {{remaining}}/{{total}} tokens for fields_remaining
+  nudgeMessage       String?  // the follow-up Nudge callout text (null = no separate nudge)
+  nudgeToOwner       String?  // aor | xm | mds | cep | ops | dca â€” who the nudge names
+  active             Boolean  @default(true)
+  order              Int
+}
+
+// A campaign created via the New Request modal or the chat's
+// propose_new_campaign flow. The seeded demo portfolio (REQUESTS in the
+// client) stays static mock data, same as before â€” this table only holds
+// campaigns actually created at runtime, which previously lived ONLY in
+// that client-side array: any server restart or full page reload silently
+// wiped them from the portfolio list (and any /requests/:id deep link into
+// one), even though their FieldEntry/Comment rows were already durable.
+// Array-shaped fields are stored as JSON text, same convention as
+// FormField.optionsJson elsewhere in this schema.
+model Campaign {
+  id            String   @id // TactPlan id, e.g. "TP-84486"
+  name          String
+  brand         String
+  ic            String
+  color         String
+  phase         String   // preplan | plan | exec
+  phaseLabel    String
+  updated       String
+  daysOpen      Int
+  status        String   // active | completed
+  indication    String
+  channels      String
+  golive        String
+  ready         String
+  fieldsResolved String
+  daysToGolive  String
+  ownersJson    String   // JSON array of PersonaKey
+  actionJson    String   // JSON Partial<Record<PersonaKey,'me'|'block'|'wait'>>
+  actionTextJson String  // JSON Partial<Record<PersonaKey,string>>
+  mineToJson    String   // JSON array of PersonaKey
+  createdAt     DateTime @default(now())
+}
+
+// Per-section conversation threads â€” comments AOR/XM/MDS/CEP/Ops/DCA leave on
+// a specific section of a specific campaign request (sectionId reuses the
+// exact same id scheme SECTIONS already uses client-side â€” "oms", "sms-t1",
+// "journey-tp1", ... â€” so a thread can hang off any section, including a
+// per-tactic CRF instance, with no new id scheme). Append-only: no edit/
+// delete for v1, this is a conversation log, not an editable notes field.
+model Comment {
+  id            String   @id @default(cuid())
+  tactplanId    String   // matches REQUESTS[].id, e.g. "TP-88213"
+  sectionId     String
+  authorPersona String   // aor | xm | mds | cep | ops | dca
+  body          String
+  mentionsJson  String?  // JSON array of persona keys tagged in this comment, e.g. ["xm","mds"] â€” denormalized so "who do I owe a reply to" doesn't need to parse body text
+  // "human" = a real person wrote this in the Conversations drawer.
+  // "agent" = the assistant posted it on someone's behalf â€” notify_stakeholders
+  // and fired NudgeRule mentions. Both are real, persisted comments in the
+  // SAME table (the notification bell reads across both, by mention,
+  // regardless of source), but Conversations is human-to-human by design â€”
+  // the drawer filters to source="human" only, so an agent notification
+  // shows up in the bell without also cluttering the thread meant for
+  // people actually talking to each other.
+  source        String   @default("human")
+  createdAt     DateTime @default(now())
+
+  @@index([tactplanId, sectionId])
+}
+
+// Per-campaign values that are not form answers. Keyed by tactplanId rather
+// than living on Campaign, because Campaign only holds runtime-created
+// campaigns and the seeded portfolio needs a Brand code too. brandCode is
+// entered by OMS and never shown in the form or sent to the chat agent.
+model CampaignMeta {
+  tactplanId String   @id
+  brandCode  String?
+  journeyUpdatedAt DateTime?
+  draftedAt  DateTime? // emails + journeys auto-drafted from intake (once)
+  updatedAt  DateTime @updatedAt
+}
+
+// Admin defaults: which contact a brand uses for each Contact Details role.
+// value is an AppUser id (person), a JSON array of ids (people), or an
+// organization name (organization) depending on the slot.
+model BrandContact {
+  id    Int    @id @default(autoincrement())
+  brand String
+  slot  String
+  value String
+
+  @@unique([brand, slot])
+}
+
+// A campaign's own copy of its contacts, copied from BrandContact once Brand
+// is set, then edited and confirmed by CDM. Later changes to the brand's
+// defaults never rewrite these rows.
+model CampaignContact {
+  id            Int       @id @default(autoincrement())
+  tactplanId    String
+  slot          String
+  value         String?
+  brand         String?   // the brand this row was copied for â€” drives the "set for previous brand" warning
+  confirmedAt   DateTime?
+  confirmedBy   String?
+  edited        Boolean   @default(false) // false = still the brand default ("auto")
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([tactplanId, slot])
+}
+
+// One row per handoff that has fired for a campaign. The unique key is the
+// fire-once guarantee: a second insert for the same handoff fails.
+model TriggerFiring {
+  id          Int       @id @default(autoincrement())
+  tactplanId  String
+  triggerId   String    // A | B | C | D | E | F
+  firedAt     DateTime  @default(now())
+  doneAt      DateTime?
+  doneBy      String?   // a role key, or "migration"
+  flaggedJson String?   // e.g. {"brandChanged":true,"fieldsChanged":true}
+
+  @@unique([tactplanId, triggerId])
+}
+
+// Section 3: one row per email. Fields 32-41 (and the AOR-entered Email
+// Metadata ID) live in valuesJson keyed by field number; position is the
+// author's rail order only, not send order.
+model CampaignEmail {
+  id          String   @id @default(cuid())
+  tactplanId  String
+  position    Int
+  valuesJson  String   @default("{}")
+  metadataId  String?
+  autoJson    String   @default("[]") // field keys still holding the auto draft
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+
+  @@index([tactplanId])
+}
+
+// Section 4: a touchpoint inside one segment's journey. SQLite treats NULLs
+// as distinct in a unique index, so unassigned touchpoints are fine while an
+// email can still be used by at most one touchpoint.
+model JourneyTouchpoint {
+  id           String   @id @default(cuid())
+  tactplanId   String
+  segment      String
+  position     Int
+  name         String   @default("")
+  emailId      String?
+  abTest       Boolean  @default(false)
+  waitDays     Int?
+  resendNeeded Boolean  @default(false)
+  resendRule   String?  // "open" | "click"
+  resendDays   Int?
+  auto         Boolean  @default(false) // auto-drafted, untouched
+  updatedAt    DateTime @updatedAt
+
+  @@unique([tactplanId, emailId])
+  @@index([tactplanId, segment])
+}
+
+// One sign-off per Orchestration section (contacts: CDM; emails, journeys:
+// AOR). While a row exists the section is locked; Reopen deletes it.
+model SectionConfirmation {
+  id          Int      @id @default(autoincrement())
+  tactplanId  String
+  section     String   // contacts | emails | journeys
+  confirmedAt DateTime @default(now())
+  confirmedBy String
+
+  @@unique([tactplanId, section])
+}
+
+// Campaign Studio (the redesigned NORA intake UI). The whole client-side
+// planning state — fields, provenance, emails/touchpoints, validation and
+// flow — is stored as one JSON document per campaign, because that UI's
+// planning model owns the shape and evolves faster than a relational
+// schema should. List views read the denormalized brand/title/status.
+model StudioCampaign {
+  id         String   @id @default(cuid())
+  brand      String
+  title      String   @default("")
+  stage      String   @default("upload") // upload | processing | review | planning
+  stateJson  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

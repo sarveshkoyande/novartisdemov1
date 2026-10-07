@@ -1,0 +1,30 @@
+.is-upload .review-main { padding:44px 44px 28px; }
+.review-experience { max-width:1352px; position:relative; }
+.review-upload { position:absolute; right:0; top:0; border:0; border-radius:8px; padding:0 18px; height:38px; color:white; background:#d64100; font-size:13px; font-weight:500; }
+.review-upload:hover { background:#a83400; }
+.review-experience .upload-signature { margin-bottom:27px; }
+.review-experience h1 { max-width:506px; }
+.review-intro { max-width:506px; margin:15px auto 0; color:#616161; font-size:15px; line-height:23.25px; }
+.review-sections { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:24px; margin-top:31px; }
+.review-card { display:flex; flex-direction:column; position:relative; min-height:252px; padding:28px 28px 30px; text-align:left; border:1px solid #f2f2f2; border-radius:14px; background:white; color:#161616; font-family:'Accelerate Inter',Arial,sans-serif; transition:border-color 180ms,box-shadow 180ms; }
+.review-card:hover { border-color:#d64100; box-shadow:0 6px 18px #13192608; }
+.review-card-top { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; }
+.review-icon { width:48px; height:48px; display:grid; place-items:center; border-radius:10px; background:#fcfcfc; }
+.review-icon img,.review-arrow img { display:block; }
+.review-status { font:500 12px/21px 'Accelerate Plex',Arial,sans-serif; padding:0 9px; border-radius:6px; color:#d64100; background:#f2f2f2; white-space:nowrap; }
+.review-status.needs-input { color:#d64100; background:#fff0ea; }
+.review-count { align-self:flex-start; margin-top:39px; padding:4px 8px; border-radius:999px; background:#ffd0bc; color:#616161; font-size:11px; line-height:10px; }
+.review-card strong { margin-top:8px; font-size:20px; line-height:25px; letter-spacing:-.21px; }
+.review-card-copy { margin-top:8px; color:#616161; font-size:14px; line-height:22px; }
+.review-arrow { position:absolute; right:16px; bottom:8px; width:24px; height:24px; display:grid; place-items:center; }
+.review-experience .upload-composer { margin-top:62px; }
+@media(max-width:1150px) { .review-sections {grid-template-columns:repeat(2,minmax(0,1fr));} }
+@media(max-width:600px) { .is-upload .review-main {padding:24px 20px;} .review-upload {position:static; display:block; margin:0 0 20px auto;} .review-sections {grid-template-columns:1fr;} .review-card {min-height:252px;} .review-experience .upload-signature {margin-bottom:28px;} }
+@media(prefers-reduced-motion:reduce) { .review-card {transition:none;} }
+
+/* Five workspace blocks. */
+.review-sections { grid-template-columns:repeat(5,minmax(0,1fr)); gap:18px; }
+.review-card { padding:24px 22px 26px; }
+@media(max-width:1250px) { .review-sections { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media(max-width:900px) { .review-sections { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:600px) { .review-sections { grid-template-columns:1fr; } }

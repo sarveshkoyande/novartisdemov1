@@ -1,0 +1,56 @@
+# Render blueprint for the Accelerate backend + served front end.
+#
+# NOTE: Render's Blueprint auto-detection only reads render.yaml at the REPO
+# ROOT — the authoritative copy is /render.yaml (one level up from
+# accelerate-app/). This copy is kept for local reference; if you change one,
+# change both.
+#
+# Deploy: Render dashboard > New > Blueprint > pick this repo. Render reads
+# this file, creates the service, and then prompts for the two secret values
+# below (sync:false means "ask me, do not store in git").
+#
+# IMPORTANT — the SQLite database is EPHEMERAL on the free plan. Render gives
+# each deploy a fresh filesystem, so dev.db resets to whatever the seed script
+# writes on every deploy and every restart. That is fine for a demo. It is not
+# fine for anything anyone is expected to keep. To keep data, either attach a
+# paid persistent disk (see the commented `disk:` block) or move Prisma to
+# Postgres — Render's managed Postgres is the usual choice.
+services:
+  - type: web
+    name: novaccle-accelerate
+    runtime: node
+    plan: free
+    rootDir: server
+    # Builds the React client first (client/dist is what server.js now
+    # serves — see its express.static/SPA-fallback routes), then the
+    # server itself: installs, generates the Prisma client, applies
+    # migrations, and seeds the schema/demo data. cd ../client is relative
+    # to rootDir above. --include=dev forces vite/typescript to install
+    # despite Render's build-time NODE_ENV=production, which otherwise
+    # silently skips devDependencies and breaks `npm run build`.
+    buildCommand: cd ../client && npm install --include=dev && npm run build && cd ../server && npm install && npx prisma generate && npx prisma migrate deploy && npm run seed
+    # Render injects PORT; server.js already honours process.env.PORT.
+    # --use-system-ca is harmless here (it is required only on the corporate
+    # laptop, where TLS is intercepted) and is kept so local and deployed runs
+    # use one identical command.
+    startCommand: node --use-system-ca server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: DATABASE_URL
+        value: file:./dev.db
+      # Prompted at deploy time and stored in Render, never in the repo.
+      - key: ANTHROPIC_FOUNDRY_API_KEY
+        sync: false
+      - key: ANTHROPIC_FOUNDRY_RESOURCE
+        sync: false
+      - key: CLAUDE_DEPLOYMENT
+        value: claude-opus-4-8
+    # Uncomment to make the SQLite file survive deploys (requires a paid plan):
+    # disk:
+    #   name: accelerate-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    # ...and set DATABASE_URL to file:/var/data/dev.db

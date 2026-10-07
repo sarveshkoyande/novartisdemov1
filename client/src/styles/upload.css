@@ -1,0 +1,45 @@
+.is-upload { background:#f2f2f2; min-height:100vh; color:#161616; font-family:'Accelerate Plex',var(--font-sans); }
+.is-upload .accelerate-header button { font-family:'Accelerate Inter',var(--font-sans); }
+.is-upload .upload-main { max-width:none; padding:36px 24px 28px; min-height:calc(100vh - 64px); }
+.upload-experience { max-width:1130px; margin:0 auto; text-align:center; }
+#upload-orb { width:185.64px; height:185.64px; margin:0 auto; view-transition-name:nora-discovery; }
+.upload-signature { display:flex; justify-content:center; align-items:center; gap:8px; margin:12px 0 0; font:9px/13.5px Arial,sans-serif; letter-spacing:1.3px; color:#616161; }
+.upload-signature > span:first-child { width:4px; height:4px; border-radius:50%; background:#ff4e00; }
+.upload-signature > span:last-child { color:#7a7a7a; }
+.upload-experience h1 { max-width:650px; margin:0 auto; font:400 38px/45.6px Arial,sans-serif; letter-spacing:-1.3px; color:#161616; }
+.upload-intro { max-width:520px; margin:20px auto 0; font:15px/25.5px Arial,sans-serif; color:#616161; }
+.upload-files-area { width:445px; max-width:100%; margin:44px auto 0; }
+.upload-drop { min-height:202px; padding:29px 10px 28px; border:1px dashed #384eb74d; border-radius:4px; background:#fcfcfc; transition:background 180ms,border-color 180ms; }
+.upload-drop.is-dragging { background:#fff0ea; border-color:#d64100; }
+.upload-cloud { display:block; margin:0 auto 23px; }
+.upload-drop p { margin:0 0 13px; font-size:16px; font-weight:600; color:#3f3f3f; line-height:24px; }
+.upload-browse { background:none; border:0; color:#3f3f3f; text-decoration:underline; padding:0; font-weight:600; }
+.upload-drop small { display:block; font:12px/18px Arial,sans-serif; color:#3f3f3f; }
+.upload-actions { display:flex; justify-content:space-between; align-items:center; margin-top:26px; }
+.upload-skip { border:0; padding:10px 0; background:none; color:#616161; font-size:14px; font-weight:500; }
+.upload-submit { min-height:48px; padding:0 20px; display:flex; align-items:center; justify-content:center; gap:17px; border:0; border-radius:10px; color:white; background:#d64100; font-size:15px; font-weight:500; box-shadow:0 10px 24px -10px #d6410066; }
+.upload-submit:disabled { background:#3f3f3f; }
+.upload-submit:not(:disabled):hover { background:#a83400; }
+.upload-file-list { list-style:none; padding:0; margin:12px 0 0; text-align:left; }
+.upload-file-list li { display:flex; align-items:center; justify-content:space-between; gap:12px; background:white; padding:10px 12px; border:1px solid #dadada; border-radius:6px; margin-top:6px; }
+.upload-file-list strong { display:block; font-size:13px; overflow-wrap:anywhere; font-weight:500; }
+.upload-file-list small { display:block; font-size:11px; color:#616161; }
+.upload-file-list button { width:32px; height:32px; flex-shrink:0; border:0; border-radius:5px; background:#f2f2f2; font-size:20px; }
+.upload-composer { max-width:700px; margin:76px auto 0; min-height:161px; border:1px solid #dadada; background:white; border-radius:20px; padding:20px 15px 11px 19px; }
+.upload-composer textarea { display:block; width:100%; height:84px; resize:vertical; min-height:84px; border:0; padding:0; color:#161616; font:16px/24.8px 'Accelerate Plex',Arial,sans-serif; background:transparent; }
+.upload-composer textarea::placeholder { color:#7a7a7a; opacity:1; }
+.upload-composer-actions { display:flex; align-items:center; justify-content:space-between; margin-top:8px; }
+.upload-attach { display:flex; align-items:center; gap:8px; border:0; border-radius:10px; padding:8px 10px; background:none; color:#616161; font-size:13.5px; }
+.upload-attach img { display:block; }
+.upload-send { height:36px; padding:0 27px; border:0; border-radius:18px; background:#d64100; color:white; font-size:13.5px; }
+.upload-send:disabled { background:#f2f2f2; color:#161616; }
+.upload-caption { margin:10px 0 0; font-size:12px; color:#616161; }
+.upload-demo-note { margin:8px 0 0; font-size:11px; color:#616161; }
+.upload-feedback { max-width:700px; margin:12px auto 0; font-size:13px; line-height:20px; color:#161616; }
+.upload-feedback:empty { display:none; }
+@media(max-width:760px) { .is-upload .upload-main { padding-top:24px; } .upload-experience h1 { font-size:30px; line-height:1.2; } .upload-signature { font-size:8px; letter-spacing:.8px; } .upload-intro { margin-top:22px; } .upload-files-area { margin-top:30px; } .upload-composer { margin-top:60px; } .upload-submit { padding:0 12px; gap:10px; font-size:14px; } }
+@media(prefers-reduced-motion:reduce) { .upload-drop { transition:none; } }
+/* Upload, processing and review content at 82%, matching Home (header and planning stay full size). */
+.is-upload:not(.is-planning) > main { zoom: .82; }
+/* The review page's four section cards read larger; take it down further. */
+.is-upload:not(.is-planning) > main.review-main { zoom: .7; }

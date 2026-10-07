@@ -1,0 +1,46 @@
+/* Material preparation: a calm progress line while NORA works, then the summary in a box. */
+.upload-processing { display:flex; flex-direction:column; align-items:center; text-align:center; }
+.upload-processing .upload-signature { margin-bottom:27px; }
+.processing-copy { min-height:96px; width:100%; }
+.processing-copy .processing-description { max-width:440px; min-height:36px; margin:14px auto 0; font:15px/22px Arial,sans-serif; color:#616161; }
+/* Heading and description cross-fade between stages. */
+.processing-fade { animation:proc-fade 600ms ease both; }
+
+/* Progress: a rail with four checkpoints. A glowing head glides along it, a soft streak
+   sweeps through the filled part, and each checkpoint fills with one gentle ripple when reached. */
+.processing-progress { width:100%; max-width:540px; margin:38px auto 0; }
+.proc-rail { position:relative; height:2px; border-radius:1px; background:#dadada; }
+.proc-fill { position:absolute; left:0; top:0; height:100%; overflow:hidden; border-radius:1px; background:linear-gradient(90deg,#161616,#d64100 70%,#ff4e00); transition:width 1600ms cubic-bezier(.22,.61,.36,1); }
+.proc-streak { position:absolute; top:0; left:0; width:90px; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent); transform:translateX(-100%); animation:proc-race 1.9s cubic-bezier(.45,.05,.35,1) infinite; }
+.proc-head { position:absolute; top:50%; width:9px; height:9px; margin:-4.5px 0 0 -4.5px; border-radius:50%; background:#ff4e00; box-shadow:0 0 0 4px rgba(255,78,0,.16), 0 0 14px 2px rgba(255,78,0,.45); transition:left 1600ms cubic-bezier(.22,.61,.36,1); animation:proc-breathe 2.2s ease-in-out infinite; }
+.is-done .proc-head { animation:none; box-shadow:0 0 0 4px rgba(255,78,0,.16); }
+.is-done .proc-streak { animation:none; opacity:0; }
+.proc-check { position:absolute; top:50%; width:9px; height:9px; margin:-4.5px 0 0 -4.5px; box-sizing:border-box; border-radius:50%; background:#fcfcfc; border:2px solid #dadada; transition:background 400ms ease, border-color 400ms ease; }
+.proc-check::after { content:''; position:absolute; inset:-2px; border-radius:50%; border:1px solid #ff4e00; opacity:0; }
+.proc-check.is-reached { background:#d64100; border-color:#d64100; }
+.proc-check.is-reached::after { animation:proc-ripple 900ms ease-out; }
+.proc-stages { display:grid; grid-template-columns:repeat(4,1fr); margin:16px 0 0; padding:0; list-style:none; }
+.proc-stages li { font-size:12.5px; line-height:16px; letter-spacing:.2px; color:#b4b4b4; transition:color 500ms ease; }
+.proc-stages li.is-complete { color:#7a7a7a; }
+.proc-stages li.is-active { color:#161616; }
+
+/* Summary: one quiet box, left-aligned plain prose. */
+.processing-summary { width:100%; max-width:600px; margin:30px auto 0; padding:24px 28px; text-align:left; background:#fff; border:1px solid #dadada; border-radius:12px; animation:proc-fade 700ms ease both; }
+.processing-summary p { margin:0 0 14px; font:15px/24px Arial,sans-serif; color:#3f3f3f; }
+.processing-summary p:first-child { color:#161616; font-size:16px; }
+.processing-summary p:last-child { margin-bottom:0; }
+.summary-facts { margin:16px 0 0; padding:14px 0 0; list-style:none; border-top:1px solid #e8e8e8; }
+.summary-facts li { font-size:12.5px; line-height:18px; color:#616161; }
+
+.processing-cancel { display:block; min-width:138px; height:38px; margin:36px auto 0; padding:0 18px; background:transparent; color:#616161; border:1px solid #dadada; border-radius:8px; font-size:13px; font-weight:500; transition:background 200ms ease, border-color 200ms ease, color 200ms ease; }
+.processing-cancel:hover { border-color:#161616; color:#161616; }
+.processing-cancel.is-primary { height:44px; padding:0 26px; background:#161616; border-color:#161616; color:#fff; font-size:14px; }
+.processing-cancel.is-primary:hover { background:#d64100; border-color:#d64100; }
+.processing-demo { max-width:520px; margin:22px auto 0; color:#7a7a7a; font-size:11px; }
+
+@keyframes proc-fade { from { opacity:0; } to { opacity:1; } }
+@keyframes proc-race { 0% { transform:translateX(-100%); } 70%,100% { transform:translateX(560%); } }
+@keyframes proc-breathe { 0%,100% { box-shadow:0 0 0 4px rgba(255,78,0,.16), 0 0 14px 2px rgba(255,78,0,.45); } 50% { box-shadow:0 0 0 7px rgba(255,78,0,.08), 0 0 20px 4px rgba(255,78,0,.3); } }
+@keyframes proc-ripple { from { opacity:.8; transform:scale(1); } to { opacity:0; transform:scale(2.6); } }
+@media(max-width:600px) { .processing-summary { padding:20px; } .proc-stages li { font-size:11.5px; } }
+@media(prefers-reduced-motion:reduce) { .processing-fade, .processing-summary, .proc-streak, .proc-head, .proc-check.is-reached::after { animation:none; } .proc-fill, .proc-head, .proc-check, .proc-stages li { transition:none; } }

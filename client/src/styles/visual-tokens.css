@@ -1,0 +1,36 @@
+/* Live site observations: docs/VISUAL_AUDIT.md. Local CSS; no font downloads. */
+:root {
+  --brand-primary: #161616; /* observed text */
+  --brand-primary-strong: #3f3f3f;
+  --brand-accent: #ff4e00; /* observed graphic accent */
+  --accent-text: #d64100; /* darkened for readable small text */
+  --surface-canvas: #fcfcfc; /* observed canvas */
+  --surface-raised: #ffffff;
+  --surface-subtle: #f2f2f2; /* observed neutral */
+  --surface-agent: #f2f2f2; /* product adaptation */
+  --agent-ink: #161616; /* sampled secondary tone */
+  --text-primary: #161616;
+  --text-secondary: #616161;
+  --text-muted: #7a7a7a;
+  --border-subtle: #f2f2f2;
+  --success: #161616;
+  --attention: #fff0ea;
+  --font-sans: Arial, Helvetica, sans-serif; /* local substitute for Volta */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 24px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --shadow-soft: 0 18px 50px -32px #16161626;
+  --shadow-focus: 0 0 0 4px #ff4e0033;
+  --motion-fast: 180ms;
+  --motion-medium: 300ms;
+  --motion-slow: 600ms;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+}

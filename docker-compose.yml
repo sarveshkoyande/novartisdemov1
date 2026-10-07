@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4300:4300"
+    env_file:
+      - server/.env
+    volumes:
+      # dev.db lives on a named volume so data survives image rebuilds —
+      # without this, every `docker compose build` would wipe FieldEntry/
+      # BrandIndication/AgentSkill back to an empty (or seed-only) database.
+      - db-data:/app/server/db-data
+    environment:
+      - DATABASE_URL=file:/app/server/db-data/dev.db
+
+volumes:
+  db-data:
