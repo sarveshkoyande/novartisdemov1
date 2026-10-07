@@ -131,6 +131,11 @@ function register(app, prisma, { ai, model, extractFileText }) {
     res.json({ ok: true });
   });
 
+  registerAi(app, { ai, model, extractFileText });
+}
+
+// Claude-powered routes. Stateless (no database), so the Vercel function can serve them too.
+function registerAi(app, { ai, model, extractFileText }) {
   // Upload screen: parse every file to text, then (when a model is
   // configured) map the combined text onto fields. Always returns the
   // extracted text so the client can fall back to its local mapper.
@@ -171,4 +176,5 @@ function register(app, prisma, { ai, model, extractFileText }) {
   });
 }
 
-module.exports = { register };
+
+module.exports = { register, registerAi };

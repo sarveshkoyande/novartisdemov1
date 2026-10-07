@@ -1,0 +1,110 @@
+[
+ {
+  "name": "Cosentyx",
+  "indication": "Ankylosing spondylitis",
+  "therapeuticArea": "Immunology",
+  "branded": "Branded"
+ },
+ {
+  "name": "Cosentyx",
+  "indication": "Hidradenitis suppurativa",
+  "therapeuticArea": "Immunology",
+  "branded": "Branded"
+ },
+ {
+  "name": "Cosentyx",
+  "indication": "Plaque psoriasis",
+  "therapeuticArea": "Immunology",
+  "branded": "Branded"
+ },
+ {
+  "name": "Cosentyx",
+  "indication": "Psoriatic arthritis",
+  "therapeuticArea": "Immunology",
+  "branded": "Branded"
+ },
+ {
+  "name": "Entresto",
+  "indication": "Heart failure with preserved ejection fraction (HFpEF)",
+  "therapeuticArea": "Cardiovascular",
+  "branded": "Branded"
+ },
+ {
+  "name": "Entresto",
+  "indication": "Heart failure with reduced ejection fraction (HFrEF)",
+  "therapeuticArea": "Cardiovascular",
+  "branded": "Branded"
+ },
+ {
+  "name": "Fabhalta",
+  "indication": "IgA nephropathy",
+  "therapeuticArea": "Renal / Hematology",
+  "branded": "Branded"
+ },
+ {
+  "name": "Fabhalta",
+  "indication": "Paroxysmal nocturnal hemoglobinuria (PNH)",
+  "therapeuticArea": "Renal / Hematology",
+  "branded": "Branded"
+ },
+ {
+  "name": "Kesimpta",
+  "indication": "Relapsing multiple sclerosis",
+  "therapeuticArea": "Neuroscience",
+  "branded": "Branded"
+ },
+ {
+  "name": "Kisqali",
+  "indication": "HR+/HER2− early breast cancer",
+  "therapeuticArea": "Oncology",
+  "branded": "Branded"
+ },
+ {
+  "name": "Kisqali",
+  "indication": "HR+/HER2− metastatic breast cancer",
+  "therapeuticArea": "Oncology",
+  "branded": "Branded"
+ },
+ {
+  "name": "Leqvio",
+  "indication": "Hyperlipidemia / LDL-C reduction",
+  "therapeuticArea": "Cardiovascular",
+  "branded": "Branded"
+ },
+ {
+  "name": "Lutathera",
+  "indication": "Gastroenteropancreatic neuroendocrine tumors (GEP-NETs)",
+  "therapeuticArea": "Oncology",
+  "branded": "Branded"
+ },
+ {
+  "name": "Pluvicto",
+  "indication": "PSMA-positive metastatic castration-resistant prostate cancer",
+  "therapeuticArea": "Oncology",
+  "branded": "Branded"
+ },
+ {
+  "name": "Scemblix",
+  "indication": "Chronic myeloid leukemia (CML)",
+  "therapeuticArea": "Oncology",
+  "branded": "Branded"
+ },
+ {
+  "name": "Tafinlar + Mekinist",
+  "indication": "BRAF V600E/K melanoma",
+  "therapeuticArea": "Oncology",
+  "branded": "Branded"
+ },
+ {
+  "name": "Xolair",
+  "indication": "Chronic spontaneous urticaria",
+  "therapeuticArea": "Immunology",
+  "branded": "Branded"
+ },
+ {
+  "name": "Zolgensma",
+  "indication": "Spinal muscular atrophy (SMA)",
+  "therapeuticArea": "Neuroscience",
+  "branded": "Branded"
+ }
+]

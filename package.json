@@ -1,0 +1,17 @@
+{
+  "name": "campaign-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Novartis Accelerate Campaign Studio. Root package for the Vercel function in api/; the website is built from client/ and the full server lives in server/.",
+  "engines": { "node": ">=20.19" },
+  "dependencies": {
+    "@anthropic-ai/foundry-sdk": "^0.4.1",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "jszip": "^3.10.2",
+    "mammoth": "^1.12.0",
+    "multer": "^2.2.0",
+    "pdf-parse": "^2.4.5",
+    "xlsx": "^0.18.5"
+  }
+}
