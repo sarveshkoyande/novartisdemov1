@@ -20,11 +20,13 @@ const icons: Record<string, string> = {
   existing: '<rect x="5" y="5" width="16" height="16" rx="3"/><path d="M10 10h11v11M5 15h10v6"/>',
   brand: '<path d="M13 4v18M4 13h18"/><path d="M6 4H4v2m16-2h2v2M4 20v2h2m14 0h2v-2"/>',
   indication: '<path d="M4 17 11 10l5 5 7-9"/><path d="M17 6h6v6"/><circle cx="5" cy="20" r="2"/>',
+  update: '<path d="M21 13a8 8 0 1 1-2.6-5.9"/><path d="M21 4v5h-5"/>',
 };
 const cards: [string, string, string][] = [
   ['existing', 'Existing Brand', 'Create a new campaign for an existing brand.'],
   ['brand', 'New Brand', 'Create a campaign for a brand that has not yet been set up.'],
   ['indication', 'New Indication', 'Create a campaign for a new indication under an existing brand.'],
+  ['update', 'Update Existing Campaign', 'Make changes to a campaign you have already started.'],
 ];
 
 export default function WelcomePage() {
@@ -102,6 +104,12 @@ export default function WelcomePage() {
     setSelected(key);
     setAgentState('acknowledgement');
     setOrbState('speaking');
+    if (key === 'update') {
+      setResponse('Update Existing Campaign. Let’s find the one you want to change.');
+      proceeding.current = true;
+      timers.current.push(setTimeout(() => navigate('/campaigns'), reduced ? 0 : 320));
+      return;
+    }
     setResponse(`${cardName[key]}. Let’s start with what you already have.`);
     proceeding.current = true;
     const state = initialState();

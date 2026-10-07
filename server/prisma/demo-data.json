@@ -908,14 +908,14 @@
    "brand": "Cosentyx",
    "indication": "Plaque psoriasis",
    "brandedUnbranded": "Branded",
-   "therapeuticArea": "Immunology"
+   "therapeuticArea": "Rheumatology"
   },
   {
    "id": 4,
    "brand": "Cosentyx",
    "indication": "Psoriatic arthritis",
    "brandedUnbranded": "Branded",
-   "therapeuticArea": "Immunology"
+   "therapeuticArea": "Rheumatology"
   },
   {
    "id": 5,
@@ -971,14 +971,14 @@
    "brand": "Cosentyx",
    "indication": "Hidradenitis suppurativa",
    "brandedUnbranded": "Branded",
-   "therapeuticArea": "Immunology"
+   "therapeuticArea": "Rheumatology"
   },
   {
    "id": 19,
    "brand": "Cosentyx",
    "indication": "Ankylosing spondylitis",
    "brandedUnbranded": "Branded",
-   "therapeuticArea": "Immunology"
+   "therapeuticArea": "Rheumatology"
   },
   {
    "id": 20,

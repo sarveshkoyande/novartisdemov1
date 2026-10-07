@@ -4,7 +4,9 @@ import AgentOrb, { useSpeakingPulse } from '../../components/AgentOrb';
 import Composer from '../../components/Composer';
 import Signature from '../../components/Signature';
 import { useCampaignStore } from '../../stores/useCampaignStore';
-import { planning, required, sectionStatus, unresolved } from '../../studio/planningModel';
+import { planning, required, unresolved } from '../../studio/planningModel';
+import { roleSection } from '../../studio/roleStatus';
+import { usePersonaStore } from '../../stores/usePersonaStore';
 import { api } from '../../api';
 import { applyMapped, mapLocally } from '../../studio/mapping';
 
@@ -19,6 +21,7 @@ const sections = [
 
 export default function ReviewView() {
   const { state, mutate, setStage } = useCampaignStore();
+  const role = usePersonaStore(st => st.role);
   const heading = useRef<HTMLHeadingElement>(null);
   const [feedback, setFeedback] = useState<string>(state.material.summary || '');
   const [busy, setBusy] = useState(false);
@@ -68,11 +71,12 @@ export default function ReviewView() {
           <p className="review-intro">I’ve mapped the information I could find. Review what’s prepared and complete anything that’s still missing.</p>
           <div className="review-sections">
             {sections.map(section => {
-              const status = sectionStatus(state, section.domain);
+              const rs = roleSection(state, section.domain, role);
+              const status = rs.tone === 'needs' ? 'Needs input' : rs.tone === 'waiting' ? `With ${rs.owners.join(' and ')}` : rs.tone === 'pending' ? 'Not started' : 'Complete';
               const req = required(state, section.domain);
               return (
                 <button key={section.domain} type="button" className="review-card" onClick={() => openSection(section.domain)}>
-                  <span className="review-card-top"><span className="review-icon"><img src={`/assets/review/${section.icon}.svg`} alt="" /></span><span className={`review-status ${status === 'Complete' ? '' : 'needs-input'}`}>{status}</span></span>
+                  <span className="review-card-top"><span className="review-icon"><img src={`/assets/review/${section.icon}.svg`} alt="" /></span><span className={`review-status ${rs.tone === 'needs' ? 'needs-input' : rs.tone === 'waiting' || rs.tone === 'pending' ? 'with-others' : ''}`}>{status}</span></span>
                   <span className="review-count">{['Email', 'Touchpoint'].includes(section.domain) ? `${planning(state).emails.length} linked objects` : `${req.length - unresolved(state, section.domain, undefined).length}/${req.length} required captured`}</span>
                   <strong>{section.label}</strong>
                   <span className="review-card-copy">Review what NORA prepared and fill the gaps.</span>

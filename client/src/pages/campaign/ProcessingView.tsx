@@ -6,6 +6,7 @@ import { useCampaignStore } from '../../stores/useCampaignStore';
 import { api } from '../../api';
 import { applyMapped, mapLocally } from '../../studio/mapping';
 import { definitions, planning, unresolved } from '../../studio/planningModel';
+import { isMineFor, otherOwnerLabel } from '../../studio/ownership';
 
 const stages = [
   { label: 'Uploading', title: 'Gathering your material', description: 'Bringing your selected documents and notes together for review.' },
@@ -15,9 +16,9 @@ const stages = [
 ];
 const stageDuration = 1800;
 
-// Ownership, as on the Campaign Canvas.
-const isMine = (id: string) => id !== '19' && /\bDM\b/.test(definitions[id].owner);
-const ownerOf = (id: string) => (id === '19' ? 'OMS' : definitions[id].owner.includes('AoR') ? 'AoR' : definitions[id].owner);
+// Ownership, as on the Campaign Canvas (the Delivery Manager's view).
+const isMine = (id: string) => isMineFor('DM', id);
+const ownerOf = (id: string) => otherOwnerLabel('DM', id);
 const list = (xs: string[]) => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}` : xs[0] || '');
 
 // Strip anything that reads like internal bookkeeping: "(field 11)", "(21)", "fields 22, 23".

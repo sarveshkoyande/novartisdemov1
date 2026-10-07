@@ -53,7 +53,7 @@ export function initialState(): any {
 
 // User-specified discovery fixtures, matching Figma 56:1442. Not official master data.
 export const brands: Brand[] = [
-  { name: 'Cosentyx', indication: 'Plaque psoriasis', therapeuticArea: 'Immunology' },
+  { name: 'Cosentyx', indication: 'Plaque psoriasis', therapeuticArea: 'Rheumatology' },
   { name: 'Entresto', indication: 'Heart failure', therapeuticArea: 'Cardiovascular' },
   { name: 'Kisqali', indication: 'HR+/HER2− breast cancer', therapeuticArea: 'Oncology' },
   { name: 'Leqvio', indication: 'Hypercholesterolaemia', therapeuticArea: 'Cardiovascular' },

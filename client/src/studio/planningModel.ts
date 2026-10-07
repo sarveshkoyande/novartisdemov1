@@ -18,11 +18,11 @@ export function planning(state) {
  if (!state.planning) state.planning={section:'General',view:'memory',mode:'LIVE',role:'Delivery Manager',meta:{},emails:[],touchpoints:[],active:0,messages:{General:[],Contact:[],Email:[],Touchpoint:[],Flow:[]},drafts:{},recent:[],validation:'incomplete',revision:'',version:0,flow:{nodes:[],version:-1,status:'ready',zoom:1,selected:null},editing:null};
  const p=state.planning;
  // The Delivery Manager owns sign-off: there is no SA validation step.
- p.role='Delivery Manager';
  if(p.validation==='awaiting')p.validation='validated';
  if(p.validation==='revision_requested')p.validation='incomplete';
  if(p.view==='validation')p.view='memory';
  for(const id of ['20','22.1']) if(state.fields[id]&&!p.meta[id])p.meta[id]={source:'Source default'};
+ reconcileMaster(state);
  state.fields['11'] ||= state.channel || '';
  return p;
 }
@@ -55,6 +55,7 @@ export function issue(state,id,section,index) {
  const v=value(state,id,section,index); if(!v)return 'Needs input';
  const meta=target(state,section,index)?.meta[id];
  if(meta?.waiting)return 'Waiting / dependency';
+ if(meta?.conflict)return 'Conflicts with brand master';
  if(meta?.unconfirmed)return 'Needs confirmation';
  if(id==='19'&&!/^\d{8}$/.test(v))return 'Enter exactly 8 digits';
  if(id==='10'&&!/^[a-z0-9-]+$/i.test(v))return 'Use an alphanumeric ID';
@@ -69,7 +70,7 @@ export function issue(state,id,section,index) {
 }
 export function required(state,section,index=planning(state).active) {
  let ids=groups[section].flatMap(g=>g[2]).filter(id=>applicable(state,id,section,index));
- const optional=['29','30','35','41','42','44.1'];
+ const optional=['29','30','35','39','40','44.1'];
  if(section==='Touchpoint'&&index===planning(state).emails.length-1)optional.push('48');
  return ids.filter(id=>!optional.includes(id));
 }
@@ -105,6 +106,21 @@ export function setField(state,id,input,section=planning(state).section,index=pl
  if(id==='24'&&/^\d+$/.test(v)&&Number(v)<=100){while(p.emails.length<Number(v))addEmail(state);}
  if(changed){p.version++;if(section==='General'&&p.validation==='validated')p.validation='incomplete';p.recent.push({section,index,id});p.recent=p.recent.slice(-30);}
  inherit(state);return changed;
+}
+// Indication and Therapeutic Area are checked against the brand master. A value that
+// matches the master for the chosen brand is accepted on the spot; only a value the
+// master can't vouch for stays "Needs confirmation" and gets asked about.
+function reconcileMaster(state) {
+ const p=state.planning,brand=state.fields['14'];
+ if(!p||!brand)return;
+ const known=brands.filter(b=>b.name===brand);
+ for(const [id,key] of [['15','indication'],['16','therapeuticArea']]) {
+  const v=String(state.fields[id]||'').trim().toLowerCase();
+  if(!v||!p.meta[id]?.unconfirmed||!known.length)continue;
+  const master=[...new Set(known.map(b=>String(b[key]||'').trim()).filter(Boolean))];
+  if(master.some(m=>m.toLowerCase()===v)) p.meta[id]={...p.meta[id],unconfirmed:false,conflict:undefined,source:'Matches brand master'};
+  else if(master.length) p.meta[id]={...p.meta[id],conflict:{master}};
+ }
 }
 export function evaluateGeneral(state) {
  const p=planning(state);const complete=!unresolved(state,'General').length;

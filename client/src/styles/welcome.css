@@ -15,7 +15,7 @@
 .nora-name { font-size: 21px; line-height: 1.4; letter-spacing: -.4px; color: #3f3f3f; margin: 0 0 10px; }
 .nora-purpose { font-size: 15px; line-height: 1.7; color: var(--text-secondary); max-width: 510px; margin: 0 auto; }
 .nora-invitation { font-size: 19px; font-weight: 400; letter-spacing: -.35px; line-height: 1.4; margin: 30px 0 22px; }
-.nora-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; text-align: left; max-width: 970px; margin: 0 auto; }
+.nora-choices { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; text-align: left; max-width: 1180px; margin: 0 auto; }
 .nora-choice { display: flex; flex-direction: column; text-align: left; padding: 23px 26px 26px; color: var(--text-primary); border: 1px solid #dadada; border-radius: 12px; background: linear-gradient(140deg, #fff, #fcfcfc); box-shadow: 0 8px 20px -20px #27455c55; opacity: 0; visibility: hidden; transform: translateY(22px) scale(.985); transition: opacity 480ms var(--ease), transform 520ms var(--ease), visibility 480ms, border-color 180ms, box-shadow 180ms, background 180ms; }
 .nora-choice:first-child { border-color: #7a7a7a; background: linear-gradient(140deg, #fff, #fcfcfc); }
 .nora-card-top { display: flex; align-items: center; justify-content: space-between; color: #3f3f3f; margin-bottom: 28px; }
@@ -76,3 +76,6 @@
 .is-home .home-composer .upload-caption { text-align:center; color:#7a7a7a; }
 /* Home content at 82% (header stays full size). */
 .is-home > main { zoom: .82; }
+
+/* Four cards: two per row on narrower windows. */
+@media (max-width: 1100px) and (min-width: 621px) { .nora-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 640px; } }

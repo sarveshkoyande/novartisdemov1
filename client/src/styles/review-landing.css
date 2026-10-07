@@ -28,3 +28,7 @@
 @media(max-width:1250px) { .review-sections { grid-template-columns:repeat(3,minmax(0,1fr)); } }
 @media(max-width:900px) { .review-sections { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:600px) { .review-sections { grid-template-columns:1fr; } }
+
+/* "With others" and "Not started": quiet grey, not the orange of something waiting on you. */
+.review-status.with-others { color:#616161; background:#f2f2f2; border-color:#dadada; }
+.review-status:not(.needs-input):not(.with-others) { color:#161616; }

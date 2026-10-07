@@ -169,3 +169,21 @@ input:focus, input:focus-visible, textarea:focus, textarea:focus-visible, select
 .conversation-thread { scrollbar-width:none; -ms-overflow-style:none; }
 .conversation-thread::-webkit-scrollbar { display:none; width:0; height:0; }
 
+
+/* Role switch: the profile at the top right is a button. */
+.accelerate-profile .role-switch { display:flex; align-items:center; gap:10px; padding:4px 10px 4px 4px; background:transparent; border:1px solid transparent; border-radius:999px; text-align:left; cursor:pointer; transition:border-color 160ms ease, background 160ms ease; }
+.accelerate-profile .role-switch:hover { border-color:#dadada; background:#fcfcfc; }
+.accelerate-profile .role-text { display:block; }
+.accelerate-profile .role-text strong, .accelerate-profile .role-text span { display:block; }
+.role-swap { color:#7a7a7a; font-size:13px; }
+.role-switch:hover .role-swap { color:#d64100; }
+
+/* Optional extras inside the form */
+.story-optional { margin:22px 0 0; padding-top:16px; border-top:1px dashed #dadada; }
+.story-optional h4 { margin:0; font:600 13px/18px Arial,sans-serif; color:#616161; text-transform:none; }
+.conversation-thread .story-optional p { margin:2px 0 4px; font-size:12.5px; line-height:18px; color:#7a7a7a; }
+.story-optional label { display:block; margin-top:10px; }
+.story-optional label > span { display:block; font:500 13px/18px Arial,sans-serif; color:#3f3f3f; }
+
+/* Sent-for-approval state on the Flow Planner suggestion button */
+.suggestions button.done { background:#f2f2f2; border-color:#dadada; color:#161616; }

@@ -8,11 +8,13 @@ import { useCampaignStore } from '../../stores/useCampaignStore';
 import { api } from '../../api';
 import { applyMapped } from '../../studio/mapping';
 import { brands } from '../../studio/demoData';
+import { isMineFor, otherOwnerLabel } from '../../studio/ownership';
+import { usePersonaStore } from '../../stores/usePersonaStore';
 import {
   planning, groups, definitions, label, target, value, choices, applicable, issue, required, unresolved,
   sectionStatus, addEmail, setField, evaluateGeneral, revise, resubmit, validate, mapMessage, provideCampaignCode,
 } from '../../studio/planningModel';
-import { inputsFromCampaign, generateFlow, chatEditFlow, patchToInputs, downloadVsdx } from '../../studio/flowPlanner';
+import { inputsFromCampaign, generateFlow, chatEditFlow, patchToInputs } from '../../studio/flowPlanner';
 import type { OrbState } from '../../components/agent-orb/agent-orb.js';
 
 function Btn({ onClick, children, ...rest }: { onClick: () => void; children: ReactNode; [k: string]: any }) {
@@ -32,6 +34,7 @@ export default function PlanningView() {
   const [orbState, setOrbState] = useState<OrbState>('idle');
   const [editValue, setEditValue] = useState('');
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const role = usePersonaStore(s => s.role);
   const heading = useRef<HTMLHeadingElement>(null);
   const thread = useRef<HTMLDivElement>(null);
   const attach = useRef<HTMLInputElement>(null);
@@ -39,7 +42,7 @@ export default function PlanningView() {
   const notes = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
   const history = p.messages[key];
-  useEffect(() => { setAnswers({}); }, [s, p.active]);
+  useEffect(() => { setAnswers({}); }, [s, p.active, role]);
   const draft = p.drafts[key] || '';
 
   const update = (fn: (st: any, pl: any) => void) => mutate(st => fn(st, planning(st)));
@@ -93,6 +96,25 @@ export default function PlanningView() {
   // Flow Planner: generate/update regenerates from the latest Campaign
   // Memory; anything else is a plain-English edit through the server's
   // chat-edit tool, merged into planning.flow.edits, then regenerated.
+  // Send for approval: records which version was sent, then NORA acknowledges. Nothing leaves
+  // the app in this demo. Editing the flow afterwards makes the sent version out of date.
+  const approval = p.flow.approval as { status: string; revision: number } | undefined;
+  const approvalSent = !!approval && approval.revision === p.flow.revision;
+  function sendForApproval() {
+    if (thinking || busy || !p.flow.svg) return;
+    update((_, pl) => { pl.messages.Flow.push({ role: 'user', text: 'Send this flow for approval.' }); });
+    setThinking(true);
+    setTimeout(() => {
+      update((_, pl) => {
+        pl.flow.approval = { status: 'sent', revision: pl.flow.revision, sentAt: new Date().toISOString() };
+        const first = `I’ve sent version ${pl.flow.revision} of the flow for approval.`;
+        const rest = 'I’ll let you know here once it has been reviewed. You can keep refining it meanwhile; if you change the flow, I’ll offer to send the updated version.';
+        pl.messages.Flow.push({ role: 'agent', text: first + ' ' + rest, lines: [first, rest] });
+      });
+      setThinking(false);
+    }, 750);
+  }
+
   async function runFlow(text: string) {
     const say = (t: string) => update((_, pl) => { pl.messages.Flow.push({ role: 'agent', text: t }); });
     update((_, pl) => { pl.messages.Flow.push({ role: 'user', text }); pl.drafts.Flow = ''; pl.flow.edits ||= {}; });
@@ -204,12 +226,13 @@ export default function PlanningView() {
           {id === '19' && !v && <small>{p.oms ? 'Requested from OMS. OMS provides this code; the Delivery Manager cannot enter it.' : 'Provided by OMS. NORA requests it automatically once the details above it are complete.'}</small>}
           {id === '11' && <small>Single-channel preview. HQE/SMS selection behavior remains a source conflict.</small>}
           {id === '49.1' && <small>Source options unresolved; entered condition is not a validated option.</small>}
+          {meta.conflict && <small>Brand master lists {meta.conflict.master.join(' / ')}</small>}
           {problem && v && !meta.waiting && <small className="attention">{problem}</small>}
         </div>
         {!active && (
           <div className="mem-actions">
             {meta.source && <span className="mem-source" title={meta.source}>{meta.source}</span>}
-            {meta.unconfirmed && <Btn onClick={() => update((st, pl) => { const tt = target(st, section, index); tt.meta[id] = { ...tt.meta[id], unconfirmed: false, source: 'Confirmed by you' }; pl.version++; evaluateGeneral(st); })}>Confirm</Btn>}
+            {meta.unconfirmed && <Btn onClick={() => update((st, pl) => { const tt = target(st, section, index); tt.meta[id] = { ...tt.meta[id], unconfirmed: false, conflict: undefined, source: tt.meta[id]?.conflict ? 'Kept over brand master' : 'Confirmed by you' }; pl.version++; evaluateGeneral(st); })}>{meta.conflict ? 'Keep mine' : 'Confirm'}</Btn>}
             {!inherited && id !== '19' && <Btn onClick={() => startEdit(id, section, index)}>{v ? 'Edit' : 'Add'}</Btn>}
             {id === '19' && p.oms?.status === 'requested' && <Btn title="Simulates OMS answering the notification" onClick={() => startEdit(id, section, index)}>Respond as OMS (demo)</Btn>}
           </div>
@@ -223,8 +246,10 @@ export default function PlanningView() {
   // Who fills a field, from the schema's owner column. The signed-in persona
   // is the Delivery Manager; Campaign Code is OMS's even though the schema
   // lists DM, so it never counts as the DM's to fill.
-  const ownerOf = (id: string) => (id === '19' ? 'OMS' : definitions[id].owner);
-  const isMine = (id: string) => id !== '19' && /\bDM\b/.test(definitions[id].owner);
+  // Ownership follows the demo role chosen at the top right. "Mine" is what this role fills;
+  // everything else is reported as being with whoever owns it.
+  const ownerOf = (id: string) => otherOwnerLabel(role, id);
+  const isMine = (id: string) => isMineFor(role, id);
   // Pending = still needs something: empty, unconfirmed, invalid or waiting.
   const isPending = (id: string, section: string, index: number) => !value(state, id, section, index) || !!issue(state, id, section, index);
 
@@ -343,6 +368,16 @@ export default function PlanningView() {
       </div>
     );
 
+    if (role === 'SA') return (
+      <div className="story-ask">
+        <p className="story-lead">Flow Planner is your area.</p>
+        <p>There are no campaign details waiting on the Solution Architect. You can build the flow from whatever has been captured so far.</p>
+        <div className="story-pills">
+          <Btn onClick={() => update((_, pl) => { pl.view = 'flow'; })}>Open Flow Planner</Btn>
+          <Btn onClick={toWorkspace}>Campaign workspace</Btn>
+        </div>
+      </div>
+    );
     if (s === 'General' && p.validation === 'revision_requested') return (
       <div className="story-ask">
         <p className="story-lead">General Details need revision.</p>
@@ -360,6 +395,7 @@ export default function PlanningView() {
     if (done || !open.length) return (
       <div className="story-ask">
         <p className="story-lead">{othersPending ? `That’s everything on your side of ${s}.` : `${s} Details are complete.`}</p>
+        {s === 'Email' && <p className="story-note">The subject line and pre-header are optional. Tell me in the message box if you’d like to add them.</p>}
         
         {othersPending && <p className="story-note">{(() => {
           const names = othersByOwner.map(o => o.owner);
@@ -377,36 +413,46 @@ export default function PlanningView() {
 
     // The ask is ONE form card at the end of the chat: confirmations first, then
     // choices, then typed details. Answers are collected, then sent with Submit.
-    const clarify = open.filter((id: string) => value(state, id, s, i));
+    const clarify = open.filter((id: string) => value(state, id, s, i)).sort((a: string, b: string) => Number(!!target(state)?.meta[b]?.conflict) - Number(!!target(state)?.meta[a]?.conflict));
     const missing = open.filter((id: string) => !value(state, id, s, i));
     const pickable = missing.filter((id: string) => suggestions(id).length);
     const typed = missing.filter((id: string) => !pickable.includes(id));
     const batch = [...clarify, ...pickable, ...typed].slice(0, 6);
+    // Optional extras NORA invites you to add, without ever treating them as pending.
+    const optionalIds = s === 'Email' ? ['39', '40'].filter(id => !value(state, id, s, i)) : [];
     const more = open.length - batch.length;
-    const answered = batch.filter((id: string) => (answers[id] || '').trim()).length;
+    const answered = [...batch, ...optionalIds].filter((id: string) => (answers[id] || '').trim()).length;
     const fresh = !history.length;
     const inputType = (id: string) => (/^Date/i.test(definitions[id].control) ? 'date' : /Integer|number/i.test(definitions[id].control) ? 'number' : 'text');
 
-    const form = batch.length > 0 && (
-      <form className="story-form" onSubmit={e => { e.preventDefault(); submitForm(batch); }} aria-label="Details needed from you">
+    const form = (batch.length > 0 || optionalIds.length > 0) && (
+      <form className="story-form" onSubmit={e => { e.preventDefault(); submitForm([...batch, ...optionalIds]); }} aria-label="Details needed from you">
         <header>
           <h3>{batch.length === 1 ? 'One detail for you' : `${batch.length} details for you`}</h3>
-          <p>Choose or fill in what you can, then submit. Leave anything you’re unsure of blank.</p>
+          <p>{clarify.some((id: string) => target(state)?.meta[id]?.conflict) ? 'Where your material and our records disagree, pick the one I should use. Then answer the rest and submit.' : 'Choose or fill in what you can, then submit. Leave anything you’re unsure of blank.'}</p>
         </header>
         {batch.map((id: string) => {
           const v = value(state, id, s, i), problem = issue(state, id, s, i), isClarify = clarify.includes(id);
-          const options = suggestions(id).filter(o => o.toLowerCase() !== v.toLowerCase());
+          const clashMeta = target(state)?.meta[id]?.conflict as { master: string[] } | undefined;
+          const isClash = !!clashMeta;
+          const masterVals = clashMeta?.master || [];
+          const options = isClash ? [] : suggestions(id).filter(o => o.toLowerCase() !== v.toLowerCase());
           const chosen = answers[id] || '';
           return (
             <fieldset key={id} className="story-field">
-              <legend>{definitions[id].field}{isClarify && <em>I found “{v}”{problem && problem !== 'Needs confirmation' ? ` · ${problem.toLowerCase()}` : ''}</em>}</legend>
-              {(isClarify || options.length > 0) ? (
+              <legend>{definitions[id].field}{isClash ? <em>Your material says “{v}”, but the brand master lists “{masterVals.join(' / ')}” for {state.fields['14']}. Which should I use?</em> : isClarify && <em>I found “{v}”{problem && problem !== 'Needs confirmation' ? ` · ${problem.toLowerCase()}` : ''}</em>}</legend>
+              {isClash ? (
+                <div className="story-options" role="radiogroup" aria-label={definitions[id].field}>
+                  {masterVals.map(m => <button key={m} type="button" role="radio" aria-checked={chosen === m} className={chosen === m ? 'on' : ''} onClick={() => setAns(id, m)}>Brand master: {m}</button>)}
+                  <button type="button" role="radio" aria-checked={chosen === '__confirm__'} className={chosen === '__confirm__' ? 'on' : ''} onClick={() => setAns(id, '__confirm__')}>Your material: {v}</button>
+                </div>
+              ) : (isClarify || options.length > 0) ? (
                 <div className="story-options" role="radiogroup" aria-label={definitions[id].field}>
                   {isClarify && problem === 'Needs confirmation' && <button type="button" role="radio" aria-checked={chosen === '__confirm__'} className={chosen === '__confirm__' ? 'on' : ''} onClick={() => setAns(id, '__confirm__')}>Yes, {v}</button>}
                   {options.slice(0, 6).map(o => <button key={o} type="button" role="radio" aria-checked={chosen === o} className={chosen === o ? 'on' : ''} onClick={() => setAns(id, o)}>{o}</button>)}
                 </div>
               ) : null}
-              {(!suggestions(id).length || isClarify) && (
+              {!isClash && (!suggestions(id).length || isClarify) && (
                 <input className="story-input" type={inputType(id)} value={chosen === '__confirm__' || suggestions(id).includes(chosen) ? '' : chosen}
                   placeholder={isClarify ? 'Or enter a different value' : `Enter ${definitions[id].field.toLowerCase()}`} aria-label={definitions[id].field}
                   onChange={e => setAnswers(a => ({ ...a, [id]: e.target.value }))} />
@@ -414,8 +460,18 @@ export default function PlanningView() {
             </fieldset>
           );
         })}
+        {optionalIds.length > 0 && (
+          <div className="story-optional">
+            <h4>Optional</h4>
+            <p>Anything you’d like to add for this email? You can skip these and add them later.</p>
+            {optionalIds.map((id: string) => (
+              <label key={id}><span>{definitions[id].field}</span>
+                <input className="story-input" value={answers[id] || ''} placeholder={`Add a ${definitions[id].field.toLowerCase()}`} onChange={e => setAnswers(a => ({ ...a, [id]: e.target.value }))} /></label>
+            ))}
+          </div>
+        )}
         <footer>
-          <span>{answered} of {batch.length} answered{more > 0 ? ` · ${more} more after this` : ''}</span>
+          <span>{answered} of {batch.length + optionalIds.length} answered{more > 0 ? ` · ${more} more after this` : ''}</span>
           <button type="submit" disabled={!answered}>Submit{answered ? ` ${answered} answer${answered === 1 ? '' : 's'}` : ''}</button>
         </footer>
       </form>
@@ -457,7 +513,7 @@ export default function PlanningView() {
       for (const [id, v] of entries) {
         if (v === '__confirm__') {
           const t = target(st, section, index);
-          t.meta[id] = { ...t.meta[id], unconfirmed: false, source: 'Confirmed by you' };
+          t.meta[id] = { ...t.meta[id], unconfirmed: false, conflict: undefined, source: t.meta[id]?.conflict ? 'Kept over brand master' : 'Confirmed by you' };
           pl.version++;
         } else {
           setField(st, id, v, section, index, suggestions(id).includes(v) ? 'Selected by you' : 'Entered by you');
@@ -498,7 +554,7 @@ export default function PlanningView() {
     const stale = f.svg && f.version !== p.version;
     return (
       <aside className="flow-canvas" aria-label="Flow Canvas">
-        <div className="canvas-top"><h2>Flow Canvas</h2><span>{busy ? 'Generating flow…' : f.svg ? `Generated · Version ${f.revision}` : 'No diagram yet'}</span>
+        <div className="canvas-top"><h2>Flow Canvas</h2><span>{busy ? 'Generating flow…' : f.svg ? `Generated · Version ${f.revision}${approvalSent ? ' · Sent for approval' : ''}` : 'No diagram yet'}</span>
           <div className="canvas-controls">
             <Btn aria-label="Zoom out" onClick={() => update((_, pl) => { pl.flow.zoom = Math.max(0.2, pl.flow.zoom - 0.1); })}>−</Btn>
             <output>{Math.round(f.zoom * 100)}%</output>
@@ -529,14 +585,19 @@ export default function PlanningView() {
     );
   }
 
-  const user = undefined;
-  const headingText = flow ? 'Flow Planner' : sa ? 'General Details are ready for your validation.'
-    : p.validation === 'revision_requested' && s === 'General' ? 'General Details need revision.'
-    : s === 'General' && p.validation === 'validated' ? 'General Details are complete.' : 'Some details still need your Input & Review';
+  // The heading follows what is actually left for the Delivery Manager in this section.
+  const mineLeft = target(state) ? unresolved(state, s, p.active).filter((id: string) => isMine(id) && !['45', '46', '47'].includes(id)) : [];
+  const headingText = flow ? 'Flow Planner'
+    : !target(state) ? 'Add an email to get started'
+    : mineLeft.some((id: string) => target(state)?.meta[id]?.conflict) ? 'Your material and our records disagree'
+    : mineLeft.length ? 'Some details still need your Input & Review'
+    : role === 'SA' ? 'Flow Planner is your area'
+    : s === 'General' && unresolved(state, s, 0).length ? 'Everything on your side is complete'
+    : `${s} Details are complete`;
 
   return (
     <>
-      <AccelerateHeader user={user} onNotice={setNotice} />
+      <AccelerateHeader onNotice={setNotice} />
       <div className="planning-context">
         {flow ? <Btn onClick={() => update((_, pl) => { pl.section = 'General'; pl.mode = 'REVIEW ALL'; pl.view = 'memory'; })}>← General Details</Btn> : <Btn onClick={toWorkspace}>← Campaign workspace</Btn>}
         <span className="context-divider" /><span>{state.fields['14'] || 'New Campaign'} · {({ 'New Brand Launch': 'New Brand', 'New Indication Launch': 'New Indication' } as Record<string, string>)[state.fields['12']] || 'Existing Brand'}</span><span>/</span><strong>{flow ? 'Flow Planner' : s}</strong>
@@ -579,7 +640,7 @@ export default function PlanningView() {
                 {p.flow.svg && <>
                   <Btn onClick={() => { setDraft('Add a decision block after B3 asking '); focusComposer(); setNotice('Name a block by the code printed on the diagram (B1, B2, …).'); }}>Add a step after a block</Btn>
                   <Btn onClick={() => { setDraft('Delete block '); focusComposer(); }}>Remove a block</Btn>
-                  <Btn disabled={busy} onClick={() => downloadVsdx(inputsFromCampaign(state)).catch(e => setNotice(`Export failed: ${(e as Error).message}`))}>Download .vsdx</Btn>
+                  <Btn className={approvalSent ? 'done' : ''} disabled={busy || approvalSent} onClick={sendForApproval}>{approvalSent ? 'Sent for approval ✓' : approval ? 'Send updated flow for approval' : 'Send for approval'}</Btn>
                 </>}
               </div>
             ) : story()}

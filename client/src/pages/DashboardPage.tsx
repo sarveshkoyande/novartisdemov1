@@ -3,13 +3,16 @@ import { useNavigate } from 'react-router';
 import AccelerateHeader from '../components/AccelerateHeader';
 import { api, type StudioCampaign } from '../api';
 import { dashboardDemo } from '../studio/demoData';
-import { sectionStatus, sections as planSections } from '../studio/planningModel';
+import { sections as planSections } from '../studio/planningModel';
+import { roleSection } from '../studio/roleStatus';
+import type { RoleKey } from '../studio/ownership';
+import { PERSONAS, usePersonaStore } from '../stores/usePersonaStore';
 import '../styles/dashboard.css';
 
 type Tone = 'complete' | 'progress' | 'needs' | 'waiting' | 'revision' | 'pending' | 'unset' | 'validated' | 'updated';
 const statuses: Record<Tone, [string, string]> = {
   complete: ['✓', 'Complete'], progress: ['●', 'In progress'], needs: ['!', 'Needs input'],
-  waiting: ['◔', 'Awaiting OMS'], revision: ['↺', 'Revision required'], pending: ['', 'Pending'],
+  waiting: ['◔', 'With others'], revision: ['↺', 'Revision required'], pending: ['', 'Pending'],
   unset: ['–', '—'], validated: ['✓', 'Complete'], updated: ['↑', 'Updated after flow'],
 };
 const filters: [string, string, Tone][] = [['all', 'All', 'pending'], ['needs', 'Needs me', 'needs'], ['progress', 'In progress', 'progress'], ['waiting', 'Waiting', 'waiting'], ['updates', 'Flow updates', 'updated']];
@@ -21,40 +24,51 @@ interface Row {
   flowUpdate?: { badge: string; description: string; changes: string[] };
 }
 
-const toneFor: Record<string, Tone> = { Complete: 'complete', 'Needs input': 'needs' };
-
 function ago(iso: string) {
   const min = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
   return min < 1 ? 'just now' : min < 60 ? `${min} min ago` : min < 1440 ? `${Math.round(min / 60)} h ago` : new Date(iso).toLocaleDateString();
 }
 
-// A persisted studio campaign, summarised the same way the fixtures are.
-function liveRow(c: StudioCampaign): Row {
+const sectionTone = (state: any, section: string, role: RoleKey) => { const r = roleSection(state, section, role); return { tone: r.tone as Tone, owners: r.owners }; };
+
+// A persisted studio campaign, summarised from the viewer's role.
+function liveRow(c: StudioCampaign, role: RoleKey): Row {
   const preparing = c.stage === 'upload' || c.stage === 'processing';
-  const sections = planSections.map(s => (preparing ? 'pending' : toneFor[sectionStatus(c.state, s)] || 'pending')) as Tone[];
-  // General held only by the OMS Campaign Code shows as waiting, not "needs you".
-  const omsWaiting = !preparing && c.state.planning?.oms?.status === 'requested' && !c.state.fields?.['19'];
-  if (omsWaiting && sections[0] === 'needs') sections[0] = 'waiting';
-  const firstIndex = sections.findIndex(t => t === 'needs' || t === 'revision');
+  const per = planSections.map(sec => (preparing ? { tone: 'pending' as Tone, owners: [] as string[] } : sectionTone(c.state, sec, role)));
+  const sections = per.map(x => x.tone);
+  const firstIndex = sections.findIndex(t => t === 'needs');
   const first = planSections[firstIndex];
-  const waiting = sections[0] === 'waiting';
+  const waiting = sections.includes('waiting');
   const category = preparing ? 'progress' : first ? 'needs' : waiting ? 'waiting' : 'progress';
-  const tone: Tone = preparing ? 'progress' : first ? sections[firstIndex] : waiting ? 'waiting' : 'progress';
-  const revision = sections[firstIndex] === 'revision';
+  const tone: Tone = preparing ? 'progress' : first ? 'needs' : waiting ? 'waiting' : 'progress';
+  const owners = [...new Set(per.flatMap(x => x.owners))];
+  const withText = owners.length ? `With ${owners.join(' and ')}` : 'In progress';
   return {
     id: c.id, live: true, brand: { name: c.brand }, subtitle: c.title || (preparing ? 'Material preparation' : 'Planning'),
     category, tone, sections,
-    next: preparing ? 'Upload material or continue to review' : first ? `${first} details need ${revision ? 'revision' : 'completion'}` : waiting ? 'Waiting for OMS · Campaign Code' : 'In progress',
-    action: preparing ? 'Continue intake' : first ? `${revision ? 'Review' : 'Complete'} ${first} Details` : 'Continue campaign setup',
-    attention: first ? `${first} Details need ${revision ? 'revision' : 'completion'}` : undefined,
-    badge: first ? (revision ? 'Revision required' : 'Needs input') : undefined,
+    next: preparing ? 'Upload material or continue to review' : first ? `${first} details need your input` : waiting ? withText : 'In progress',
+    action: preparing ? 'Continue intake' : first ? `Complete ${first} Details` : 'Open campaign',
+    attention: first ? `${first} Details need your input` : undefined,
+    badge: first ? 'Needs input' : undefined,
     activity: ago(c.updatedAt),
-    waiting: waiting && !first ? { badge: 'Awaiting OMS', description: 'OMS has been notified to provide the Campaign Code.', paused: 'General — Campaign Code with OMS', parallel: 'Email work can continue' } : undefined,
+    waiting: waiting && !first ? { badge: withText, description: `${withText} to continue.`, paused: owners.length ? `Waiting on ${owners.join(' and ')}` : 'Waiting', parallel: 'You can keep working on other sections' } : undefined,
   };
+}
+
+// The sample rows are the Delivery Manager's. For any other role nothing in them is theirs to do.
+function demoRows(role: RoleKey): Row[] {
+  const rows = dashboardDemo.campaigns as Row[];
+  if (role === 'DM') return rows;
+  return rows.map(r => ({
+    ...r, category: r.category === 'needs' ? 'progress' : r.category, tone: r.tone === 'needs' || r.tone === 'revision' ? 'progress' : r.tone,
+    sections: r.sections.map(t => (t === 'needs' || t === 'revision' ? 'waiting' : t)) as Tone[],
+    attention: undefined, badge: undefined, next: r.category === 'needs' ? 'With the Delivery Manager' : r.next, action: 'Open campaign',
+  }));
 }
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const role = usePersonaStore(st => st.role);
   const [live, setLive] = useState<StudioCampaign[]>([]);
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedId, setSelectedId] = useState<string | undefined>();
@@ -76,7 +90,7 @@ export default function DashboardPage() {
     return () => clearTimeout(timer.current);
   }, []);
 
-  const campaigns: Row[] = useMemo(() => [...live.map(liveRow), ...(dashboardDemo.campaigns as Row[])], [live]);
+  const campaigns: Row[] = useMemo(() => [...live.map(c => liveRow(c, role)), ...demoRows(role)], [live, role]);
   const matches = (c: Row, filter: string) => filter === 'all' || (filter === 'updates' ? !!c.flowUpdate : c.category === filter);
   const needs = campaigns.filter(c => c.category === 'needs');
   const updates = campaigns.filter(c => c.flowUpdate);
@@ -99,7 +113,7 @@ export default function DashboardPage() {
       <main id="main" className="dashboard-main">
         <section className="dash-greeting">
           <div>
-            <div className="dash-greeting-line"><h1 ref={heading} tabIndex={-1}>{dashboardDemo.greeting}, {dashboardDemo.user.firstName}</h1><p>Here’s what needs your attention today.</p></div>
+            <div className="dash-greeting-line"><h1 ref={heading} tabIndex={-1}>{dashboardDemo.greeting}, {role === 'DM' ? dashboardDemo.user.firstName : PERSONAS[role].role}</h1><p>Here’s what needs your attention today.</p></div>
             <p className="dash-nora"><span className="dash-nora-label">◆ NORA</span><span><strong>{needs.length} campaigns need your input</strong><span className="dash-separator"> · </span>{updates.length} campaign{updates.length === 1 ? ' has' : 's have'} newer details than its current flow.</span></p>
           </div>
           <button className="dash-new" type="button" onClick={() => navigate('/')}><span aria-hidden="true">＋</span> New Campaign</button>
@@ -133,7 +147,7 @@ export default function DashboardPage() {
                   <button type="button" disabled={current === pages - 1} onClick={() => setPage(current + 1)} aria-label="Next page">›</button>
                 </nav>
               )}
-              <div className="dash-legend">{(['complete', 'progress', 'needs', 'waiting', 'pending'] as Tone[]).map(key => <span key={key}><span aria-hidden="true">{statuses[key][0] || '○'}</span> {key === 'waiting' ? 'Awaiting OMS' : statuses[key][1]}</span>)}</div>
+              <div className="dash-legend">{(['complete', 'progress', 'needs', 'waiting', 'pending'] as Tone[]).map(key => <span key={key}><span aria-hidden="true">{statuses[key][0] || '○'}</span> {key === 'waiting' ? 'With others' : statuses[key][1]}</span>)}</div>
             </section>
             <div className="dash-support">
               <section className="dash-panel">
