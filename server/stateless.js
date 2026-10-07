@@ -1,7 +1,6 @@
 // Stateless server logic, shared by the local Express server (server.js) and the
 // Vercel function (api/index.js): reading uploaded documents, and the Flow Planner
 // generator / chat-edit / Visio export. Nothing here touches the database.
-const { PDFParse } = require('pdf-parse');
 const mammoth = require('mammoth');
 const XLSX = require('xlsx');
 const JSZip = require('jszip');
@@ -12,6 +11,8 @@ const JSZip = require('jszip');
 async function extractFileText(buffer, filename) {
   const ext = (filename.split('.').pop() || '').toLowerCase();
   if (ext === 'pdf') {
+    // Loaded on demand: it pulls in a native graphics module that can fail to start on some hosts.
+    const { PDFParse } = require('pdf-parse');
     const parser = new PDFParse({ data: buffer });
     const res = await parser.getText();
     return res.text || '';
