@@ -403,9 +403,8 @@ export default function PlanningView() {
     if (collapsed) return (
       <details key={name} className="mem-row"><summary>{head}</summary><div className="mem-cards">{shown.map(id => memCard(id, section, index))}</div></details>
     );
-    if (live && !cards.length) return (
-      <section key={`${name}-${index}`} className="mem-group compact"><header>{head}</header></section>
-    );
+    // LIVE is a to-do list: a group with nothing left for me disappears.
+    if (live && !cards.length) return null;
     return (
       <section key={`${name}-${index}`} className="mem-group">
         <header>{head}</header>
@@ -450,7 +449,7 @@ export default function PlanningView() {
             <div className="object-list" aria-label={`${s} objects`}>
               {p.emails.map((_: unknown, n: number) => (
                 <Btn key={n} aria-pressed={i === n} onClick={() => update((_st, pl) => { pl.active = n; pl.editing = null; })}>
-                  <strong>{label(s, n)}</strong>{s === 'Touchpoint' && <small>Linked to {label('Email', n)}</small>}{unresolved(state, s, n).length ? statusDot('needs', 'Needs input') : statusDot('complete', 'Complete')}
+                  <strong>{label(s, n)}</strong>{s === 'Touchpoint' && <small>Linked to {label('Email', n)}</small>}{(() => { const left = unresolved(state, s, n).filter((id: string) => !(s === 'Touchpoint' && ['45', '46', '47'].includes(id))); return left.some(isMine) ? statusDot('needs', 'Needs input') : left.length ? statusDot('others', `With ${[...new Set(left.map(ownerOf))].join(' · ')}`) : statusDot('complete', 'Complete'); })()}
                 </Btn>
               ))}
               {s === 'Email' && <Btn className="add-object" onClick={() => update((st, pl) => { pl.active = addEmail(st); pl.section = 'Email'; pl.view = 'memory'; pl.editing = null; })}>+ Add email</Btn>}
@@ -459,7 +458,10 @@ export default function PlanningView() {
             {t && s === 'Touchpoint' && <p className="linked-email">Linked to: <Btn onClick={() => navigateSection('Email')}>{label('Email', i)} →</Btn></p>}
           </>
         )}
-        {t && groups[s].map(g => memGroup(g, s, i, generalDone && p.mode === 'LIVE'))}
+        {t && (() => {
+          const rendered = groups[s].map(g => memGroup(g, s, i, generalDone && p.mode === 'LIVE')).filter(Boolean);
+          return rendered.length ? rendered : p.mode === 'LIVE' && <p className="mem-empty">Nothing here needs you right now. Switch to REVIEW ALL to see every detail.</p>;
+        })()}
       </aside>
     );
   }

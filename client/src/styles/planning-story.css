@@ -189,3 +189,4 @@ input:focus, input:focus-visible, textarea:focus, textarea:focus-visible, select
 .conversation-thread .story-hint { margin:10px 0 0; font-size:13px; color:#7a7a7a; }
 .story-count { display:block; margin-top:10px; font-size:12px; color:#9a9a9a; }
 @media(prefers-reduced-motion:reduce) { .story-question { animation:none; } }
+.mem-empty {margin:24px 0 0;padding:18px 20px;border:1px dashed #dadada;border-radius:10px;color:#7a7a7a;font-size:14px;text-align:center;}
