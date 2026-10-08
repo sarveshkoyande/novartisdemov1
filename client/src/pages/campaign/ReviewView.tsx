@@ -87,11 +87,11 @@ export default function ReviewView() {
             {(() => {
               // For the Solution Architect, a draft that hasn't been finalized is flagged on the card itself.
               const f = planning(state).flow;
-              const awaiting = role === 'SA' && !!f.svg && f.finalizedRevision !== f.revision;
+              const awaiting = role === 'SA' && !(f.svg && f.finalizedRevision === f.revision); // from the start: opening it generates the draft
               return (
                 <button type="button" className={`review-card${awaiting ? ' needs-review' : ''}`} onClick={openFlow}>
                   <span className="review-card-top"><span className="review-icon"><img src="/assets/review/branch.svg" alt="" /></span><span className={`review-status${awaiting ? ' needs-input' : ''}`}>{awaiting ? 'Awaiting your review' : f.svg ? 'Generated' : 'Ready'}</span></span>
-                  <span className="review-count">{awaiting ? `Version ${f.revision} generated` : f.svg ? 'Flow diagram saved' : 'No diagram yet'}</span>
+                  <span className="review-count">{awaiting ? (f.svg ? `Version ${f.revision} generated` : 'Initial draft ready') : f.svg ? 'Flow diagram saved' : 'No diagram yet'}</span>
                   <strong>Flow Design</strong>
                   <span className="review-card-copy">{awaiting ? 'The campaign flow has been generated and is waiting for your review.' : 'Generate and refine the campaign flow with Flow Planner.'}</span>
                   <span className="review-arrow"><img src="/assets/review/arrow.svg" alt="" /></span>
