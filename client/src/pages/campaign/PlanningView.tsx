@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router';
 import AccelerateHeader from '../../components/AccelerateHeader';
 import AgentOrb from '../../components/AgentOrb';
 import Composer from '../../components/Composer';
@@ -22,7 +21,6 @@ function Btn({ onClick, children, ...rest }: { onClick: () => void; children: Re
 }
 
 export default function PlanningView() {
-  const navigate = useNavigate();
   const { state, mutate, setStage, saving } = useCampaignStore();
   const p = planning(state);
   const flow = p.view === 'flow', sa = p.view === 'validation', s = p.section;
@@ -718,9 +716,7 @@ export default function PlanningView() {
         <span className="context-divider" /><span>{state.fields['14'] || 'New Campaign'} · {({ 'New Brand Launch': 'New Brand', 'New Indication Launch': 'New Indication' } as Record<string, string>)[state.fields['12']] || 'Existing Brand'}</span><span>/</span><strong>{flow ? 'Flow Planner' : s}</strong>
         <div className="planning-context-end">
           {flow ? <small>Built from the details captured so far</small> : dirty ? <small className="save-state dirty"><i aria-hidden="true" />Unsaved changes</small> : <small className="save-state">{saving === 'saving' ? 'Saving…' : saving === 'error' ? 'Not saved — check the server' : 'All changes saved'}</small>}
-          {flow ? <Btn onClick={() => update((_, pl) => { pl.section = 'General'; pl.mode = 'REVIEW ALL'; pl.view = 'memory'; })}>Campaign details</Btn>
-            : <Btn onClick={() => update((_, pl) => { pl.view = 'flow'; })}>Flow Planner</Btn>}
-          <Btn onClick={() => navigate('/campaigns')}>Campaigns</Btn>
+          {flow && <Btn onClick={() => update((_, pl) => { pl.section = 'General'; pl.mode = 'REVIEW ALL'; pl.view = 'memory'; })}>Campaign details</Btn>}
           {!flow && <Btn className="save-section" onClick={saveSection}>Save {s} Details</Btn>}
         </div>
       </div>

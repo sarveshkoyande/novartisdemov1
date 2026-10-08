@@ -82,7 +82,7 @@
 .audit-shell .planning-conversation {padding-left:32px;padding-right:32px;}
 .audit-shell .conversation-thread {padding-left:60px;}
 .is-planning .flow-shell {grid-template-columns:36% 64%;}
-.flow-shell .planning-conversation {background:white;padding:32px 40px;min-height:760px;}
+.flow-shell .planning-conversation {padding:32px 40px;min-height:760px;}
 .flow-shell .conversation-thread {padding-left:42px;}
 .flow-shell .planning-identity {margin-left:-2px;}
 .flow-shell .upload-composer {min-height:124px;padding-top:15px;}
