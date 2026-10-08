@@ -89,7 +89,7 @@ export default function ReviewView() {
               return (
                 <button key={section.domain} type="button" className="review-card" onClick={() => openSection(section.domain)}>
                   <span className="review-card-top"><span className="review-icon"><img src={`/assets/review/${section.icon}.svg`} alt="" /></span><span className={`review-status ${rs.tone === 'needs' ? 'needs-input' : rs.tone === 'waiting' || rs.tone === 'pending' ? 'with-others' : ''}`}>{status}</span></span>
-                  <span className="review-count">{['Email', 'Touchpoint'].includes(section.domain) ? `${planning(state).emails.length} linked objects` : `${req.length - unresolved(state, section.domain, undefined).length}/${req.length} required captured`}</span>
+                  <span className="review-count">{['Email', 'Touchpoint'].includes(section.domain) ? `${planning(state).emails.length} linked objects` : `${req.length - unresolved(state, section.domain, undefined).length}/${req.length} captured`}</span>
                   <strong>{section.label}</strong>
                   <span className="review-card-copy">Review what NORA prepared and fill the gaps.</span>
                   <span className="review-arrow"><img src="/assets/review/arrow.svg" alt="" /></span>
