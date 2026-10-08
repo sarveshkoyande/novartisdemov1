@@ -56,7 +56,7 @@ export default function UploadView() {
         <section className="upload-experience" aria-labelledby="upload-heading">
           <AgentOrb id="upload-orb" size={185.64} state={orbState} />
           <Signature />
-          <h1 id="upload-heading" ref={heading} tabIndex={-1}>Upload a document or meeting notes to kick-start campaign planning?</h1>
+          <h1 id="upload-heading" ref={heading} tabIndex={-1}>Upload kick-off meeting notes, a TACTPlan export or other documents to kick-start campaign planning.</h1>
           <p className="upload-intro">I can use what you already have to prepare the campaign details for review.</p>
           <div className="upload-files-area">
             <div className={`upload-drop ${dragging ? 'is-dragging' : ''}`} id="upload-drop"
