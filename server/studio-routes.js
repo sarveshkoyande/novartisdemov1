@@ -180,6 +180,31 @@ function registerAi(app, { ai, model, extractFileText }) {
     }
   });
 
+  // NORA writes the wrap-up for a section once nothing is left for the user.
+  app.post('/api/studio/section-status', async (req, res) => {
+    const { section, object, brand, captured, withOthers, recent } = req.body || {};
+    if (!ai) return res.status(503).json({ error: 'No model configured.' });
+    const fmt = (xs) => (Array.isArray(xs) ? xs.slice(0, 40) : []);
+    const facts = [
+      `Section: ${section}${object ? ` (${object})` : ''}${brand ? ` · Brand: ${brand}` : ''}`,
+      `Captured details (field = value · source):\n${fmt(captured).map((c) => `- ${c.field} = ${c.value} · ${c.source || 'unknown'}`).join('\n') || '- none'}`,
+      `Still open, owned by other teams:\n${fmt(withOthers).map((w) => `- ${w.field} · ${w.owner}${w.notified ? ' (already notified)' : ''}`).join('\n') || '- none'}`,
+      Array.isArray(recent) && recent.length ? `Recent conversation (do not repeat its wording):\n${recent.slice(-4).join('\n')}` : '',
+    ].filter(Boolean).join('\n\n');
+    try {
+      const response = await ai.messages.create({
+        model,
+        max_tokens: 300,
+        system: 'You are NORA, a requirement collection assistant for pharmaceutical campaign planning. The user has nothing left to provide in this section. Write a short status update for the chat (two or three sentences, plain prose, no lists, no markdown, no field ids). Say concretely what was populated from the uploaded material versus provided by the user, naming a few representative details rather than everything. If other teams still owe details, say who and what in everyday words and whether they have been notified. Professional, neutral and factual: no praise, no filler openers, no exclamation marks, no contractions. Vary the phrasing from the recent conversation. Return only the message.',
+        messages: [{ role: 'user', content: facts }],
+      });
+      res.json({ message: response.content.filter((b) => b.type === 'text').map((b) => b.text).join(' ').trim() });
+    } catch (err) {
+      console.error('[studio] section status failed:', err.message || err);
+      res.status(502).json({ error: String(err.message || err) });
+    }
+  });
+
   // NORA writes the next question for the conversation (one field at a time).
   app.post('/api/studio/question', async (req, res) => {
     const { field, section, brand, found, master, options, recent } = req.body || {};

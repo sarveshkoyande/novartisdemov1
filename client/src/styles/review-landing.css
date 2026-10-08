@@ -33,9 +33,4 @@
 .review-status.with-others { color:#616161; background:#f2f2f2; border-color:#dadada; }
 .review-status:not(.needs-input):not(.with-others) { color:#161616; }
 .review-start {margin:18px 0 0;font-size:13px;font-weight:600;color:#d64100;}
-.review-alert {display:flex;align-items:center;gap:12px;width:100%;max-width:760px;margin:0 auto 20px;padding:12px 16px;background:#eef4fb;border:1px solid #c9dcf1;border-radius:10px;text-align:left;font:inherit;color:#161616;cursor:pointer;}
-.review-alert:hover {border-color:#0460a9;}
-.review-alert i {width:8px;height:8px;border-radius:50%;background:#0460a9;flex:none;}
-.review-alert span {flex:1;font-size:13px;line-height:19px;}
-.review-alert strong {display:block;font-size:14px;}
-.review-alert em {font-style:normal;font-size:13px;font-weight:600;color:#0460a9;white-space:nowrap;}
+.review-card.needs-review { border-color:#d64100; }

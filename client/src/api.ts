@@ -90,4 +90,6 @@ export const api = {
     fetch('/api/studio/nora', send('POST', { text, section, emailCount })).then(r => json<{ values: MappedValue[]; reply: string }>(r)),
   question: (body: { field: string; section: string; brand?: string; found?: string; master?: string; options?: string[]; recent?: string[] }) =>
     fetch('/api/studio/question', send('POST', body)).then(r => json<{ question: string }>(r)),
+  sectionStatus: (body: { section: string; object?: string; brand?: string; captured: { field: string; value: string; source?: string }[]; withOthers: { field: string; owner: string; notified?: boolean }[]; recent?: string[] }) =>
+    fetch('/api/studio/section-status', send('POST', body)).then(r => json<{ message: string }>(r)),
 };

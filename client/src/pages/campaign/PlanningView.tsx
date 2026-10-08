@@ -39,6 +39,20 @@ export default function PlanningView() {
   const [asking, setAsking] = useState('');
   const [skipped, setSkipped] = useState<string[]>([]);
   const failedQs = useRef(new Set<string>());
+  // Section wrap-ups written by the model, keyed by section, object and campaign version.
+  const statusReq = useRef<{ key: string; body: Parameters<typeof api.sectionStatus>[0] } | null>(null);
+  const [statusNotes, setStatusNotes] = useState<Record<string, string>>({});
+  const [statusAsking, setStatusAsking] = useState('');
+  const failedStatus = useRef(new Set<string>());
+  useEffect(() => {
+    const r = statusReq.current;
+    if (!r || statusNotes[r.key] || statusAsking === r.key || failedStatus.current.has(r.key)) return;
+    setStatusAsking(r.key);
+    api.sectionStatus(r.body)
+      .then(res => { if (res.message) setStatusNotes(n => ({ ...n, [r.key]: res.message })); else failedStatus.current.add(r.key); })
+      .catch(() => { failedStatus.current.add(r.key); })
+      .finally(() => setStatusAsking(''));
+  });
   const role = usePersonaStore(s => s.role);
   const heading = useRef<HTMLHeadingElement>(null);
   const thread = useRef<HTMLDivElement>(null);
@@ -524,12 +538,31 @@ export default function PlanningView() {
         <div className="story-pills"><Btn onClick={() => update((st, pl) => { pl.active = addEmail(st); pl.section = 'Email'; pl.editing = null; })}>+ Add email</Btn></div>
       </div>
     );
-    if (done || !open.length) return (
+    if (done || !open.length) {
+      // NORA's wrap-up is written by the model from what was actually captured (and from
+      // where), and what other teams still owe. The plain lines are only a fallback.
+      const statusKey = `${s}:${i}:${p.version}`;
+      const t = target(state);
+      const ids = [...new Set(groups[s].flatMap(g => g[2] as string[]))].filter(id => applicable(state, id, s, i) && value(state, id, s, i));
+      statusReq.current = nextEmail >= 0 || !t ? null : {
+        key: statusKey,
+        body: {
+          section: s, object: ['Email', 'Touchpoint'].includes(s) ? label(s, i) : undefined, brand: state.fields['14'],
+          captured: ids.map(id => ({ field: definitions[id].field, value: String(value(state, id, s, i)).slice(0, 80), source: t?.meta[id]?.source })),
+          withOthers: withOthers.map((id: string) => ({ field: definitions[id].field, owner: ownerOf(id), notified: ownerOf(id) === 'OMS' ? !!p.oms : ownerOf(id) === 'AoR' ? !!p.aor : false })),
+          recent: (p.messages[s] || []).slice(-4).map((m: any) => `${m.role === 'user' ? 'User' : 'NORA'}: ${m.text}`),
+        },
+      };
+      const aiStatus = statusNotes[statusKey];
+      const loading = !aiStatus && statusAsking === statusKey;
+      return (
       <div className="story-ask">
-        <p className="story-lead">{nextEmail >= 0 ? `${label(s, i)} is done. ${label(s, nextEmail)} still needs a few details from you.` : othersPending ? `That’s everything on your side of ${s}.` : `${s} Details are complete.`}</p>
+        {loading ? <div className="story-thinking" role="status"><span className="dots" aria-hidden="true"><i /><i /><i /></span>NORA is thinking</div>
+          : aiStatus ? <p className="story-lead">{aiStatus}</p>
+          : <p className="story-lead">{nextEmail >= 0 ? `${label(s, i)} is done. ${label(s, nextEmail)} still needs a few details from you.` : othersPending ? `That’s everything on your side of ${s}.` : `${s} Details are complete.`}</p>}
         {s === 'Email' && <p className="story-note">The subject line and pre-header are optional. Tell me in the message box if you’d like to add them.</p>}
-        
-        {othersPending && <p className="story-note">{(() => {
+
+        {othersPending && !aiStatus && !loading && <p className="story-note">{(() => {
           const names = othersByOwner.map(o => o.owner);
           const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0];
           const sent = names.every(n => (n === 'OMS' ? p.oms : n === 'AoR' ? p.aor : true));
@@ -541,7 +574,9 @@ export default function PlanningView() {
         <p className="story-note">Where would you like to go next?</p>
         {pills}
       </div>
-    );
+      );
+    }
+    statusReq.current = null;
 
     // The ask is conversational: NORA asks ONE question at a time in the chat, worded by
     // the model. Quick replies answer it in one click; anything typed in the message box

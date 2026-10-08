@@ -69,18 +69,6 @@ export default function ReviewView() {
           <Signature />
           <h1 id="review-heading" ref={heading} tabIndex={-1}>Your campaign workspace is ready to review.</h1>
           <p className="review-intro">I’ve mapped the information I could find. Review what’s prepared and complete anything that’s still missing.</p>
-          {role === 'SA' && (() => {
-            // The Solution Architect is told when a flow draft is waiting for their review.
-            const f = planning(state).flow;
-            const pendingReview = !!f.svg && f.finalizedRevision !== f.revision;
-            return pendingReview && (
-              <button type="button" className="review-alert" onClick={openFlow}>
-                <i aria-hidden="true" />
-                <span><strong>Campaign flow generated</strong>Version {f.revision} is waiting for your review.</span>
-                <em>Review flow →</em>
-              </button>
-            );
-          })()}
           <div className="review-sections">
             {sections.map(section => {
               const rs = roleSection(state, section.domain, role);
@@ -96,13 +84,20 @@ export default function ReviewView() {
                 </button>
               );
             })}
-            <button type="button" className="review-card" onClick={openFlow}>
-              <span className="review-card-top"><span className="review-icon"><img src="/assets/review/branch.svg" alt="" /></span><span className="review-status">{planning(state).flow.svg ? 'Generated' : 'Ready'}</span></span>
-              <span className="review-count">{planning(state).flow.svg ? 'Flow diagram saved' : 'No diagram yet'}</span>
-              <strong>Flow Design</strong>
-              <span className="review-card-copy">Generate and refine the campaign flow with Flow Planner.</span>
-              <span className="review-arrow"><img src="/assets/review/arrow.svg" alt="" /></span>
-            </button>
+            {(() => {
+              // For the Solution Architect, a draft that hasn't been finalized is flagged on the card itself.
+              const f = planning(state).flow;
+              const awaiting = role === 'SA' && !!f.svg && f.finalizedRevision !== f.revision;
+              return (
+                <button type="button" className={`review-card${awaiting ? ' needs-review' : ''}`} onClick={openFlow}>
+                  <span className="review-card-top"><span className="review-icon"><img src="/assets/review/branch.svg" alt="" /></span><span className={`review-status${awaiting ? ' needs-input' : ''}`}>{awaiting ? 'Awaiting your review' : f.svg ? 'Generated' : 'Ready'}</span></span>
+                  <span className="review-count">{awaiting ? `Version ${f.revision} generated` : f.svg ? 'Flow diagram saved' : 'No diagram yet'}</span>
+                  <strong>Flow Design</strong>
+                  <span className="review-card-copy">{awaiting ? 'The campaign flow has been generated and is waiting for your review.' : 'Generate and refine the campaign flow with Flow Planner.'}</span>
+                  <span className="review-arrow"><img src="/assets/review/arrow.svg" alt="" /></span>
+                </button>
+              );
+            })()}
           </div>
           <p className="review-start">Click a section to get started with adding your campaign details.</p>
           <Composer value={state.material.reviewNotes || ''} onChange={v => mutate(s => { s.material.reviewNotes = v; })} onSend={submit} disabled={busy} onAttach={() => setStage('upload')} />
