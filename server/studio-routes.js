@@ -49,27 +49,32 @@ const RECORD_TOOL = {
           required: ['section', 'index', 'id', 'value'],
         },
       },
-      reply: { type: 'string', description: 'A short note to a campaign manager in plain, friendly language. Two or three short paragraphs separated by a blank line: (1) what you captured, in at most two short sentences that summarise by area (campaign details, project team, emails, touchpoints) rather than listing every detail — no field numbers or ids, no jargon; (2) the details you could not find, named in everyday words in one short sentence. Do not say who will provide them — the app shows that separately; (3) only if relevant, one short caveat such as a known source conflict. No lists, no markdown, no question marks.' },
+      reply: { type: 'string', description: 'Your reply to the user, written fresh for this specific message (see the reply instructions in the system prompt).' },
     },
     required: ['values', 'reply'],
   },
 };
 
-function systemPrompt(emailCount) {
+const REPLY_MATERIAL = 'Reply instructions: write a concise summary of two or three sentences in plain prose (no lists, no markdown, no field ids). First sentence: what the material covers, stated factually (for example the brand, indication, audience, number of emails and touchpoints). Second sentence: the most important required details that were not found, at most five, named in everyday words, followed by a short phrase such as and several other details when more are missing. Do not enumerate everything captured, do not say who will provide missing details, and do not add caveats or recommendations. Tone: professional, neutral and factual, as in a business status update to a pharmaceutical brand team. No praise or judgement of the material (never words like nice, nicely, great, solid, clear), no casual language or contractions, no dashes for asides, no exclamation marks.';
+const REPLY_CHAT = 'Reply instructions: you are mid-conversation. In one or two short sentences, confirm only the specific values you recorded from this message (for example the date or name given). Never summarise the whole campaign or repeat earlier recaps. If nothing could be recorded, state briefly why and what is needed. Do not open with filler such as Got it, Sure, Great or Noted. Tone: professional, neutral and factual, as in a business status update to a pharmaceutical brand team. No praise or judgement of the material (never words like nice, nicely, great, solid, clear), no casual language or contractions, no dashes for asides, no exclamation marks.';
+
+function systemPrompt(emailCount, replyGuide = REPLY_MATERIAL) {
   return `You are NORA, the Requirement Collection Agent for a pharmaceutical campaign intake tool.
+Today is ${new Date().toISOString().slice(0, 10)}; when a date has no year, use the next upcoming occurrence.
 Extract ONLY values that the text explicitly states. Never invent values, options, people, IDs or dates.
 TACTPlan ID is a manual identifier: record it only if literally present. Never record the Campaign Code: it is provided by OMS, not by the user, even if the text contains one.
 For single-select fields, use one of the values listed in the rules when the text clearly matches; otherwise record the text as given.
 The campaign currently has ${emailCount} email(s). Email/Touchpoint index 0 is "Email 01". If the text mentions an email beyond the current count, still record it — the client will add it. If the text states a number of emails, record field 24.
+${replyGuide}
 Field catalog:
 ${fieldCatalog()}`;
 }
 
-async function mapWithClaude(ai, model, text, emailCount, contextLine) {
+async function mapWithClaude(ai, model, text, emailCount, contextLine, replyGuide) {
   const response = await ai.messages.create({
     model,
     max_tokens: 4000,
-    system: systemPrompt(emailCount),
+    system: systemPrompt(emailCount, replyGuide),
     tools: [RECORD_TOOL],
     tool_choice: { type: 'tool', name: 'record_fields' },
     messages: [{ role: 'user', content: `${contextLine}\n\n<text>\n${text.slice(0, 60000)}\n</text>` }],
@@ -168,9 +173,36 @@ function registerAi(app, { ai, model, extractFileText }) {
     if (!text) return res.status(400).json({ error: 'text is required.' });
     if (!ai) return res.status(503).json({ error: 'No model configured.' });
     try {
-      res.json(await mapWithClaude(ai, model, String(text), Number(emailCount) || 0, `The user is working in the ${section || 'General'} section. Unqualified email/touchpoint details refer to the active object.`));
+      res.json(await mapWithClaude(ai, model, String(text), Number(emailCount) || 0, `The user is working in the ${section || 'General'} section. Unqualified email/touchpoint details refer to the active object.`, REPLY_CHAT));
     } catch (err) {
       console.error('[studio] nora mapping failed:', err.message || err);
+      res.status(502).json({ error: String(err.message || err) });
+    }
+  });
+
+  // NORA writes the next question for the conversation (one field at a time).
+  app.post('/api/studio/question', async (req, res) => {
+    const { field, section, brand, found, master, options, recent } = req.body || {};
+    if (!field) return res.status(400).json({ error: 'field is required.' });
+    if (!ai) return res.status(503).json({ error: 'No model configured.' });
+    const facts = [
+      `Field: ${field} (section: ${section || 'General'})`,
+      brand ? `Brand: ${brand}` : '',
+      master && found ? `Conflict: the uploaded material says "${found}" but the brand master record says "${master}". Ask which to use.` : found ? `The material gave "${found}", which needs confirming.` : 'The value is missing.',
+      Array.isArray(options) && options.length ? `Answer options that will be shown as buttons: ${options.slice(0, 6).join(', ')}` : 'There are no preset options; the user will type the answer.',
+      Array.isArray(recent) && recent.length ? `Recent conversation (do not repeat its wording):\n${recent.slice(-4).join('\n')}` : '',
+    ].filter(Boolean).join('\n');
+    try {
+      const response = await ai.messages.create({
+        model,
+        max_tokens: 200,
+        system: 'You are NORA, a requirement collection assistant for pharmaceutical campaign planning. Write the single next question to ask the campaign manager in a chat. One or two short sentences, professional and neutral, plain text, no markdown, no field ids, no greetings or filler, no praise. Do not list the answer options; they appear as buttons. Vary the phrasing from the recent conversation. Return only the question.',
+        messages: [{ role: 'user', content: facts }],
+      });
+      const question = response.content.filter((b) => b.type === 'text').map((b) => b.text).join(' ').trim();
+      res.json({ question });
+    } catch (err) {
+      console.error('[studio] question failed:', err.message || err);
       res.status(502).json({ error: String(err.message || err) });
     }
   });

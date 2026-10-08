@@ -23,12 +23,12 @@ export default function ReviewView() {
   const { state, mutate, setStage } = useCampaignStore();
   const role = usePersonaStore(st => st.role);
   const heading = useRef<HTMLHeadingElement>(null);
-  const [feedback, setFeedback] = useState<string>(state.material.summary || '');
+  const [feedback, setFeedback] = useState<string>('');
   const [busy, setBusy] = useState(false);
   const [pulse, setPulse] = useState(1);
   const orbState = useSpeakingPulse(pulse, 1800);
 
-  useEffect(() => { document.title = 'Accelerate · Campaign review'; heading.current?.focus({ preventScroll: true }); }, []);
+  useEffect(() => { document.title = 'Campaign Accelerator · Campaign review'; heading.current?.focus({ preventScroll: true }); }, []);
 
   function respond(text: string) { setFeedback(text); setPulse(p => p + 1); }
 
@@ -69,6 +69,7 @@ export default function ReviewView() {
           <Signature />
           <h1 id="review-heading" ref={heading} tabIndex={-1}>Your campaign workspace is ready to review.</h1>
           <p className="review-intro">I’ve mapped the information I could find. Review what’s prepared and complete anything that’s still missing.</p>
+          <p className="review-start">Click a section below to get started with adding your campaign details.</p>
           <div className="review-sections">
             {sections.map(section => {
               const rs = roleSection(state, section.domain, role);

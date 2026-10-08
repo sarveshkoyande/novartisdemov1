@@ -88,4 +88,6 @@ export const api = {
   },
   nora: (text: string, section: string, emailCount: number) =>
     fetch('/api/studio/nora', send('POST', { text, section, emailCount })).then(r => json<{ values: MappedValue[]; reply: string }>(r)),
+  question: (body: { field: string; section: string; brand?: string; found?: string; master?: string; options?: string[]; recent?: string[] }) =>
+    fetch('/api/studio/question', send('POST', body)).then(r => json<{ question: string }>(r)),
 };

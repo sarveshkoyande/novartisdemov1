@@ -32,3 +32,4 @@
 /* "With others" and "Not started": quiet grey, not the orange of something waiting on you. */
 .review-status.with-others { color:#616161; background:#f2f2f2; border-color:#dadada; }
 .review-status:not(.needs-input):not(.with-others) { color:#161616; }
+.review-start {margin:-6px 0 18px;font-size:13px;font-weight:600;color:#0460a9;}

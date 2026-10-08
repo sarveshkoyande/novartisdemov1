@@ -45,7 +45,7 @@ export default function DiscoveryPage() {
   };
 
   useEffect(() => {
-    document.title = 'Accelerate · Existing Brand';
+    document.title = 'Campaign Accelerator · Existing Brand';
     type();
     const timers = [setTimeout(() => setShown(s => ({ ...s, search: true })), 600), setTimeout(() => setShown({ search: true, table: true }), 1100)];
     const minimum = new Promise(r => setTimeout(r, reduced ? 0 : 2400));
@@ -132,7 +132,7 @@ export default function DiscoveryPage() {
             </fieldset>
             <p className="discovery-empty" hidden={visible.length > 0}>No matching brands. Try another brand name.</p>
           </div>
-          <p className="discovery-fixture">{error || 'Brand context from the Accelerate brand master (seeded demo data).'}</p>
+          <p className="discovery-fixture">{error || 'Brand context from the Campaign Accelerator brand master (seeded demo data).'}</p>
           <div className="discovery-actions">
             <button type="button" className="button secondary" onClick={() => navigate('/campaigns')}>Cancel</button>
             <button type="button" className="button primary" disabled={!ready || selected === null || creating} onClick={proceed}>{creating ? 'Creating…' : 'Continue'} <span aria-hidden="true">→</span></button>

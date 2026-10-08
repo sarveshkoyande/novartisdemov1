@@ -3,7 +3,7 @@ import AccelerateHeader from '../components/AccelerateHeader';
 
 // Dummy destination for top-bar tabs that are not part of this demo yet.
 export default function PlaceholderPage({ title }: { title: string }) {
-  useEffect(() => { document.title = `Accelerate · ${title}`; }, [title]);
+  useEffect(() => { document.title = `Campaign Accelerator · ${title}`; }, [title]);
   return (
     <div className="is-dashboard">
       <AccelerateHeader />

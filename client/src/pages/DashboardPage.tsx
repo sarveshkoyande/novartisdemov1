@@ -84,7 +84,7 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
-    document.title = 'Accelerate · Campaigns';
+    document.title = 'Campaign Accelerator · Campaigns';
     heading.current?.focus({ preventScroll: true });
     api.campaigns().then(setLive).catch(() => notify('Could not reach the campaign server. Showing demo fixtures only.'));
     return () => clearTimeout(timer.current);

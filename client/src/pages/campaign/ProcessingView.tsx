@@ -52,7 +52,7 @@ export default function ProcessingView() {
   const abort = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    document.title = 'Accelerate · Preparing campaign material';
+    document.title = 'Campaign Accelerator · Preparing campaign material';
     heading.current?.focus({ preventScroll: true });
     const tick = setInterval(() => setElapsedStage(Math.max(0, Math.floor((Date.now() - startedAt) / stageDuration))), 200);
     const controller = new AbortController();
@@ -143,7 +143,10 @@ export default function ProcessingView() {
             </div>
           ) : (
             <article className="processing-summary" aria-label="What NORA found">
-              {(note || '').split(/\n{2,}/).filter(Boolean).map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+              {(note || '').split(/\n{2,}/)
+                // Drop caveat sentences only, never a whole paragraph.
+                .map(para => (para.match(/[^.!?]+[.!?]+["”’)]*\s*|[^.!?]+$/g) || [para]).filter(sn => !/worth flagging|source conflict|may need confirming/i.test(sn)).join('').trim())
+                .filter(Boolean).map((paragraph, i) => <p key={i}>{paragraph}</p>)}
               {facts.length > 0 && <ul className="summary-facts">{facts.map(f => <li key={f}>{f}</li>)}</ul>}
             </article>
           )}

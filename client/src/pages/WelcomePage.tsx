@@ -26,7 +26,6 @@ const cards: [string, string, string][] = [
   ['existing', 'Existing Brand', 'Create a new campaign for an existing brand.'],
   ['brand', 'New Brand', 'Create a campaign for a brand that has not yet been set up.'],
   ['indication', 'New Indication', 'Create a campaign for a new indication under an existing brand.'],
-  ['update', 'Update Existing Campaign', 'Make changes to a campaign you have already started.'],
 ];
 
 export default function WelcomePage() {
@@ -59,7 +58,7 @@ export default function WelcomePage() {
   finishRef.current = finishIntroduction;
 
   useEffect(() => {
-    document.title = 'Accelerate · Home';
+    document.title = 'Campaign Accelerator · Home';
     const lines = [...root.current!.querySelectorAll<HTMLElement>('.nora-line')];
     writer.current = typewriter(lines, {
       startDelay: 100, sentencePause: 20, speed: 7, chunk: 4,

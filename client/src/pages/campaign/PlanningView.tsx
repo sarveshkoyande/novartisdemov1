@@ -9,7 +9,7 @@ import { api } from '../../api';
 import { applyMapped } from '../../studio/mapping';
 import { brands } from '../../studio/demoData';
 import { isMineFor, otherOwnerLabel } from '../../studio/ownership';
-import { usePersonaStore } from '../../stores/usePersonaStore';
+import { PERSONAS, usePersonaStore } from '../../stores/usePersonaStore';
 import {
   planning, groups, definitions, label, target, value, choices, applicable, issue, required, unresolved,
   sectionStatus, addEmail, setField, evaluateGeneral, revise, resubmit, validate, mapMessage, provideCampaignCode,
@@ -30,10 +30,17 @@ export default function PlanningView() {
   const [flowBusy, setFlowBusy] = useState(false);
   const busy = flow && flowBusy;
   const [notice, setNotice] = useState('');
+  const [preview, setPreview] = useState<number | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [thinking, setThinking] = useState(false);
   const [orbState, setOrbState] = useState<OrbState>('idle');
   const [editValue, setEditValue] = useState('');
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  // Conversational questions: the one on screen, model-written wording per field, and skips.
+  const current = useRef<{ key: string; id: string; section: string; index: number; found: string; master?: string; options: string[] } | null>(null);
+  const [asked, setAsked] = useState<Record<string, string>>({});
+  const [asking, setAsking] = useState('');
+  const [skipped, setSkipped] = useState<string[]>([]);
+  const failedQs = useRef(new Set<string>());
   const role = usePersonaStore(s => s.role);
   const heading = useRef<HTMLHeadingElement>(null);
   const thread = useRef<HTMLDivElement>(null);
@@ -42,13 +49,13 @@ export default function PlanningView() {
   const notes = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
   const history = p.messages[key];
-  useEffect(() => { setAnswers({}); }, [s, p.active, role]);
+  useEffect(() => { setSkipped([]); }, [s, p.active, role]);
   const draft = p.drafts[key] || '';
 
   const update = (fn: (st: any, pl: any) => void) => mutate(st => fn(st, planning(st)));
 
   useEffect(() => {
-    document.title = 'Accelerate · ' + (flow ? 'Flow Planner' : s);
+    document.title = 'Campaign Accelerator · ' + (flow ? 'Flow Planner' : s);
     heading.current?.focus({ preventScroll: true });
     window.scrollTo(0, 0);
   }, [flow, s, sa]);
@@ -96,24 +103,116 @@ export default function PlanningView() {
   // Flow Planner: generate/update regenerates from the latest Campaign
   // Memory; anything else is a plain-English edit through the server's
   // chat-edit tool, merged into planning.flow.edits, then regenerated.
-  // Send for approval: records which version was sent, then NORA acknowledges. Nothing leaves
-  // the app in this demo. Editing the flow afterwards makes the sent version out of date.
+  // ---- Flow lifecycle -------------------------------------------------------
+  // Draft → Finalized → Sent for approval. Every generation, edit and restore is a
+  // new version; the audit trail records who did what. Approval is simulated: nothing
+  // leaves the app. Changing a finalized flow makes it a draft again.
+  const actor = () => PERSONAS[role].role;
+  const MAX_DIAGRAMS = 12;
   const approval = p.flow.approval as { status: string; revision: number } | undefined;
   const approvalSent = !!approval && approval.revision === p.flow.revision;
-  function sendForApproval() {
-    if (thinking || busy || !p.flow.svg) return;
-    update((_, pl) => { pl.messages.Flow.push({ role: 'user', text: 'Send this flow for approval.' }); });
+  const isFinal = !!p.flow.svg && p.flow.finalizedRevision === p.flow.revision;
+  const stageLabel = approvalSent ? 'Sent for approval' : isFinal ? 'Finalized' : 'Draft';
+
+  // Older campaigns have a diagram but no history yet: seed version 1 from it.
+  function ensureHistory(pl: any) {
+    pl.flow.versions ||= [];
+    pl.flow.audit ||= [];
+    if (pl.flow.svg && !pl.flow.versions.length) {
+      pl.flow.versions.push({ revision: pl.flow.revision || 1, svg: pl.flow.svg, edits: JSON.parse(JSON.stringify(pl.flow.edits || {})), at: null, by: 'Flow Planner Agent', kind: 'initial', note: 'Initial draft' });
+    }
+  }
+  function logAudit(pl: any, by: string, action: string) {
+    pl.flow.audit ||= [];
+    pl.flow.audit.push({ at: new Date().toISOString(), by, action, revision: pl.flow.revision });
+  }
+  // Call after pl.flow.svg / revision hold the NEW version (ensureHistory must run before they change).
+  function recordVersion(pl: any, kind: string, note: string, by: string) {
+    pl.flow.versions.push({ revision: pl.flow.revision, svg: pl.flow.svg, edits: JSON.parse(JSON.stringify(pl.flow.edits || {})), at: new Date().toISOString(), by, kind, note });
+    const withDiagram = pl.flow.versions.filter((v: any) => v.svg);
+    // Keep diagrams for the most recent versions only; older entries keep their history line.
+    if (withDiagram.length > MAX_DIAGRAMS) withDiagram.slice(0, withDiagram.length - MAX_DIAGRAMS).forEach((v: any) => { v.svg = null; });
+    logAudit(pl, by, note);
+  }
+
+  // When Flow Planner opens with no flow yet, the initial draft is generated automatically.
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (!flow || p.flow.svg || flowBusy || autoStarted.current) return;
+    autoStarted.current = true;
+    generateInitialDraft();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flow]);
+
+  async function generateInitialDraft() {
+    setFlowBusy(true);
+    try {
+      const out = await generateFlow(inputsFromCampaign(useCampaignStore.getState().state));
+      update((_, pl) => {
+        ensureHistory(pl);
+        pl.flow.edits ||= {};
+        pl.flow.svg = out.svg; pl.flow.edits.codeAssignments = out.codeAssignments;
+        pl.flow.version = pl.version; pl.flow.revision = (pl.flow.revision || 0) + 1; pl.flow.status = 'generated';
+        recordVersion(pl, 'initial', 'Initial draft generated', 'Flow Planner Agent');
+        pl.flow.noticeOpen = true;
+        const first = 'Initial draft of the campaign flow has been generated.';
+        const rest = 'Review it on the canvas and ask me for any changes. When it looks right, finalize the draft and it can go for approval.';
+        pl.messages.Flow.push({ role: 'agent', text: `${first} ${rest}`, event: 'flow-draft' });
+      });
+      setNotice('Initial draft of the campaign flow has been generated.');
+    } catch (e) {
+      update((_, pl) => { pl.messages.Flow.push({ role: 'agent', text: `I couldn’t generate the initial draft: ${(e as Error).message}` }); });
+    } finally { setFlowBusy(false); }
+  }
+
+  function finalizeDraft() {
+    if (thinking || busy || !p.flow.svg || isFinal) return;
+    update((_, pl) => { pl.messages.Flow.push({ role: 'user', text: 'Finalize this draft.' }); });
     setThinking(true);
     setTimeout(() => {
       update((_, pl) => {
-        pl.flow.approval = { status: 'sent', revision: pl.flow.revision, sentAt: new Date().toISOString() };
-        const first = `I’ve sent version ${pl.flow.revision} of the flow for approval.`;
-        const rest = 'I’ll let you know here once it has been reviewed. You can keep refining it meanwhile; if you change the flow, I’ll offer to send the updated version.';
-        pl.messages.Flow.push({ role: 'agent', text: first + ' ' + rest, lines: [first, rest] });
+        ensureHistory(pl);
+        pl.flow.finalizedRevision = pl.flow.revision;
+        logAudit(pl, actor(), 'Draft finalized');
+        pl.messages.Flow.push({ role: 'agent', text: `Version ${pl.flow.revision} is finalized. You can now send it for approval.` });
       });
       setThinking(false);
     }, 750);
   }
+
+  function sendForApproval() {
+    if (thinking || busy || !p.flow.svg || !isFinal || approvalSent) return;
+    update((_, pl) => { pl.messages.Flow.push({ role: 'user', text: 'Send this flow for approval.' }); });
+    setThinking(true);
+    setTimeout(() => {
+      update((_, pl) => {
+        ensureHistory(pl);
+        pl.flow.approval = { status: 'sent', revision: pl.flow.revision, sentAt: new Date().toISOString() };
+        logAudit(pl, actor(), 'Sent for approval');
+        const first = `I’ve sent version ${pl.flow.revision} of the flow for approval.`;
+        const rest = 'I’ll let you know here once it has been reviewed. If you change the flow, it becomes a draft again and I’ll ask you to finalize and resend it.';
+        pl.messages.Flow.push({ role: 'agent', text: `${first} ${rest}` });
+      });
+      setThinking(false);
+    }, 750);
+  }
+
+  function restoreVersion(rev: number) {
+    const v = (p.flow.versions || []).find((x: any) => x.revision === rev);
+    if (!v?.svg || busy || thinking) return;
+    update((_, pl) => {
+      ensureHistory(pl);
+      pl.flow.svg = v.svg;
+      pl.flow.edits = JSON.parse(JSON.stringify(v.edits || {}));
+      pl.flow.revision = (pl.flow.revision || 0) + 1;
+      pl.flow.version = pl.version;
+      recordVersion(pl, 'restore', `Restored from version ${rev}`, actor());
+      pl.messages.Flow.push({ role: 'agent', text: `I’ve restored version ${rev} as version ${pl.flow.revision}. It’s a draft again, so finalize it when you’re happy with it.` });
+    });
+    setPreview(null);
+  }
+
+  const fmtWhen = (iso: string | null) => (iso ? new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Before history was kept');
 
   async function runFlow(text: string) {
     const say = (t: string) => update((_, pl) => { pl.messages.Flow.push({ role: 'agent', text: t }); });
@@ -123,7 +222,7 @@ export default function PlanningView() {
       const regenerate = /(?:generate|create|update|refresh|regenerate).*(?:flow|campaign details|diagram)/i.test(text);
       let summary = '';
       if (!regenerate) {
-        if (!p.flow.svg) { say('Generate the initial campaign flow first, then describe the change.'); return; }
+        if (!p.flow.svg) { say('The initial draft is still being prepared. Describe the change once it appears.'); return; }
         const res = await chatEditFlow(text, inputsFromCampaign(state));
         const real = patchToInputs(res.patch || {}, inputsFromCampaign(state));
         if (res.codeAssignments) real.codeAssignments = res.codeAssignments;
@@ -133,14 +232,29 @@ export default function PlanningView() {
       }
       const out = await generateFlow(inputsFromCampaign(state));
       update((_, pl) => {
+        ensureHistory(pl);
+        const wasFinal = pl.flow.svg && pl.flow.finalizedRevision === pl.flow.revision;
         pl.flow.svg = out.svg; pl.flow.edits.codeAssignments = out.codeAssignments;
         pl.flow.version = pl.version; pl.flow.revision = (pl.flow.revision || 0) + 1; pl.flow.status = 'generated';
-        pl.messages.Flow.push({ role: 'agent', text: summary || (pl.flow.revision === 1 ? 'Flow generated from the validated campaign context. What would you like to change?' : 'Flow updated with the latest campaign details.') });
+        recordVersion(pl, regenerate ? 'refresh' : 'edit', regenerate ? 'Updated from latest campaign details' : `Edited: ${text.length > 60 ? text.slice(0, 57) + '…' : text}`, actor());
+        pl.messages.Flow.push({ role: 'agent', text: (summary || 'Flow updated with the latest campaign details.') + ` This is version ${pl.flow.revision}${wasFinal ? ', back in draft until you finalize it again' : ''}.` });
       });
     } catch (e) {
       say(`Flow Planner could not complete that: ${(e as Error).message}`);
     } finally { setFlowBusy(false); }
   }
+
+  // Ask the model to word the open question (once per field), keeping the chat fresh.
+  useEffect(() => {
+    const q = current.current;
+    if (!q || asked[q.key] || asking === q.key || failedQs.current.has(q.key)) return;
+    setAsking(q.key);
+    const recent = (p.messages[q.section] || []).slice(-4).map((m: any) => `${m.role === 'user' ? 'User' : 'NORA'}: ${m.text}`);
+    api.question({ field: definitions[q.id].field, section: q.section, brand: state.fields['14'], found: q.found || undefined, master: q.master, options: q.options, recent })
+      .then(r => { if (r.question) setAsked(a => ({ ...a, [q.key]: r.question })); })
+      .catch(() => { failedQs.current.add(q.key); })
+      .finally(() => setAsking(''));
+  });
 
   async function submit(text = draft) {
     if (!text.trim() || busy || thinking) return;
@@ -149,6 +263,15 @@ export default function PlanningView() {
       return;
     }
     const section = s;
+    const q = current.current;
+    // A short reply while a question is open answers that question directly.
+    if (q && q.section === section && text.trim().length <= 120 && !/[.;]\s+\S/.test(text.trim())) {
+      const t = text.trim();
+      const pick = q.options.find(o => o.toLowerCase() === t.toLowerCase());
+      const yes = /^(yes|yep|correct|confirm(ed)?|that'?s right|keep it)\b/i.test(t);
+      answerQuestion(q.id, section, q.index, yes && q.found ? '__confirm__' : pick && pick === q.found ? '__confirm__' : pick || t, yes && q.found ? q.found : pick || t, asked[q.key] || '');
+      return;
+    }
     let turnStart = 0;
     update((_, pl) => { pl.messages[section].push({ role: 'user', text }); pl.drafts[section] = ''; turnStart = pl.messages[section].length; });
     setThinking(true);
@@ -165,7 +288,8 @@ export default function PlanningView() {
       const res = await api.nora(text, section, p.emails.length);
       let count = 0;
       mutate(st => { count = applyMapped(st, res.values, 'Provided by you').length; });
-      lines = count ? captured() : [res.reply || 'I couldn’t find campaign details to record in that message.'];
+      // The model writes the acknowledgement for this turn; the template is only a fallback.
+      lines = res.reply ? [res.reply] : count ? captured() : ['I couldn’t find campaign details to record in that message.'];
     } catch {
       // No model configured or unreachable: deterministic local mapping.
       let result = { mapped: [] as unknown[], errors: [] as string[] };
@@ -411,81 +535,86 @@ export default function PlanningView() {
       </div>
     );
 
-    // The ask is ONE form card at the end of the chat: confirmations first, then
-    // choices, then typed details. Answers are collected, then sent with Submit.
+    // The ask is conversational: NORA asks ONE question at a time in the chat, worded by
+    // the model. Quick replies answer it in one click; anything typed in the message box
+    // answers it too. Conflicts with the brand master come first, then confirmations,
+    // then choices, then typed details.
     const clarify = open.filter((id: string) => value(state, id, s, i)).sort((a: string, b: string) => Number(!!target(state)?.meta[b]?.conflict) - Number(!!target(state)?.meta[a]?.conflict));
     const missing = open.filter((id: string) => !value(state, id, s, i));
     const pickable = missing.filter((id: string) => suggestions(id).length);
     const typed = missing.filter((id: string) => !pickable.includes(id));
-    const batch = [...clarify, ...pickable, ...typed].slice(0, 6);
-    // Optional extras NORA invites you to add, without ever treating them as pending.
-    const optionalIds = s === 'Email' ? ['39', '40'].filter(id => !value(state, id, s, i)) : [];
-    const more = open.length - batch.length;
-    const answered = [...batch, ...optionalIds].filter((id: string) => (answers[id] || '').trim()).length;
-    const fresh = !history.length;
-    const inputType = (id: string) => (/^Date/i.test(definitions[id].control) ? 'date' : /Integer|number/i.test(definitions[id].control) ? 'number' : 'text');
+    const queue = [...clarify, ...pickable, ...typed].filter((id: string) => !skipped.includes(`${s}:${i}:${id}`));
+    const qid: string | undefined = queue[0];
+    if (!qid) { current.current = null; return (
+      <div className="story-ask">
+        <p className="story-note">I’ve set the remaining questions aside. Answer them any time in the message box, or edit them on the canvas.</p>
+        <div className="story-pills"><Btn onClick={() => setSkipped([])}>Go through them again</Btn></div>
+      </div>
+    ); }
 
-    const form = (batch.length > 0 || optionalIds.length > 0) && (
-      <form className="story-form" onSubmit={e => { e.preventDefault(); submitForm([...batch, ...optionalIds]); }} aria-label="Details needed from you">
-        <header>
-          <h3>{batch.length === 1 ? 'One detail for you' : `${batch.length} details for you`}</h3>
-          <p>{clarify.some((id: string) => target(state)?.meta[id]?.conflict) ? 'Where your material and our records disagree, pick the one I should use. Then answer the rest and submit.' : 'Choose or fill in what you can, then submit. Leave anything you’re unsure of blank.'}</p>
-        </header>
-        {batch.map((id: string) => {
-          const v = value(state, id, s, i), problem = issue(state, id, s, i), isClarify = clarify.includes(id);
-          const clashMeta = target(state)?.meta[id]?.conflict as { master: string[] } | undefined;
-          const isClash = !!clashMeta;
-          const masterVals = clashMeta?.master || [];
-          const options = isClash ? [] : suggestions(id).filter(o => o.toLowerCase() !== v.toLowerCase());
-          const chosen = answers[id] || '';
-          return (
-            <fieldset key={id} className="story-field">
-              <legend>{definitions[id].field}{isClash ? <em>Your material says “{v}”, but the brand master lists “{masterVals.join(' / ')}” for {state.fields['14']}. Which should I use?</em> : isClarify && <em>I found “{v}”{problem && problem !== 'Needs confirmation' ? ` · ${problem.toLowerCase()}` : ''}</em>}</legend>
-              {isClash ? (
-                <div className="story-options" role="radiogroup" aria-label={definitions[id].field}>
-                  {masterVals.map(m => <button key={m} type="button" role="radio" aria-checked={chosen === m} className={chosen === m ? 'on' : ''} onClick={() => setAns(id, m)}>Brand master: {m}</button>)}
-                  <button type="button" role="radio" aria-checked={chosen === '__confirm__'} className={chosen === '__confirm__' ? 'on' : ''} onClick={() => setAns(id, '__confirm__')}>Your material: {v}</button>
-                </div>
-              ) : (isClarify || options.length > 0) ? (
-                <div className="story-options" role="radiogroup" aria-label={definitions[id].field}>
-                  {isClarify && problem === 'Needs confirmation' && <button type="button" role="radio" aria-checked={chosen === '__confirm__'} className={chosen === '__confirm__' ? 'on' : ''} onClick={() => setAns(id, '__confirm__')}>Yes, {v}</button>}
-                  {options.slice(0, 6).map(o => <button key={o} type="button" role="radio" aria-checked={chosen === o} className={chosen === o ? 'on' : ''} onClick={() => setAns(id, o)}>{o}</button>)}
-                </div>
-              ) : null}
-              {!isClash && (!suggestions(id).length || isClarify) && (
-                <input className="story-input" type={inputType(id)} value={chosen === '__confirm__' || suggestions(id).includes(chosen) ? '' : chosen}
-                  placeholder={isClarify ? 'Or enter a different value' : `Enter ${definitions[id].field.toLowerCase()}`} aria-label={definitions[id].field}
-                  onChange={e => setAnswers(a => ({ ...a, [id]: e.target.value }))} />
-              )}
-            </fieldset>
-          );
-        })}
-        {optionalIds.length > 0 && (
-          <div className="story-optional">
-            <h4>Optional</h4>
-            <p>Anything you’d like to add for this email? You can skip these and add them later.</p>
-            {optionalIds.map((id: string) => (
-              <label key={id}><span>{definitions[id].field}</span>
-                <input className="story-input" value={answers[id] || ''} placeholder={`Add a ${definitions[id].field.toLowerCase()}`} onChange={e => setAnswers(a => ({ ...a, [id]: e.target.value }))} /></label>
-            ))}
-          </div>
-        )}
-        <footer>
-          <span>{answered} of {batch.length + optionalIds.length} answered{more > 0 ? ` · ${more} more after this` : ''}</span>
-          <button type="submit" disabled={!answered}>Submit{answered ? ` ${answered} answer${answered === 1 ? '' : 's'}` : ''}</button>
-        </footer>
-      </form>
-    );
+    const v = value(state, qid, s, i), problem = issue(state, qid, s, i);
+    const clashMeta = target(state)?.meta[qid]?.conflict as { master: string[] } | undefined;
+    const confirming = clarify.includes(qid) && !clashMeta;
+    const options = clashMeta ? [] : suggestions(qid).filter(o => o.toLowerCase() !== v.toLowerCase()).slice(0, 6);
+    const key = `${s}:${i}:${qid}`;
+    current.current = { key, id: qid, section: s, index: i, found: v, master: clashMeta?.master.join(' / '), options: clashMeta ? [...clashMeta.master, v] : confirming ? [v, ...options] : options };
+    const question = asked[key] || (asking === key ? '' : fallbackQuestion(qid, v, clashMeta?.master.join(' / '), problem));
+    const reply = (answer: string, shown: string) => answerQuestion(qid, s, i, answer, shown, question);
 
     return (
       <div className="story-ask">
-        {fresh && <p className="story-lead">{state.material?.summary ? 'I’ve prepared what I could from your material.' : `I’ll organise the ${s} details as you share them.`}</p>}
-        {fresh && <p>A few things still need you. Answer them below, or just tell me in your own words in the message box.</p>}
-        {form}
-        {waiting.length > 0 && <p className="story-note">Waiting / dependency: {waiting.map((id: string) => definitions[id].field).join(' · ')}</p>}
+        {!asked[key] && asking === key ? (
+          <div className="story-thinking" role="status"><span className="dots" aria-hidden="true"><i /><i /><i /></span>NORA is thinking</div>
+        ) : (
+          <div className="story-question">
+            <p className="story-lead">{question}</p>
+            <div className="story-chips" role="group" aria-label={definitions[qid].field}>
+              {clashMeta ? <>
+                {clashMeta.master.map(m => <button key={m} type="button" onClick={() => reply(m, m)}>{m}</button>)}
+                <button type="button" onClick={() => reply('__confirm__', v)}>{v}</button>
+              </> : <>
+                {confirming && <button type="button" onClick={() => reply('__confirm__', v)}>Yes, {v}</button>}
+                {options.map(o => <button key={o} type="button" onClick={() => reply(o, o)}>{o}</button>)}
+              </>}
+              <button type="button" className="chip-quiet" onClick={() => setSkipped(x => [...x, key])}>Skip for now</button>
+            </div>
+            {!options.length && !clashMeta && <p className="story-hint">{confirming ? 'Or type a different value below.' : 'Type your answer in the message box below.'}</p>}
+            <small className="story-count">{queue.length > 1 ? `${queue.length - 1} more after this` : 'Last one on your side'}</small>
+          </div>
+        )}
+        {waiting.length > 0 && <p className="story-note">Waiting on: {waiting.map((id: string) => definitions[id].field).join(' · ')}</p>}
         {s === 'Email' && <div className="story-pills"><Btn onClick={() => update((st, pl) => { pl.active = addEmail(st); pl.editing = null; })}>+ Add email</Btn></div>}
       </div>
     );
+  }
+
+  // Plain wording used until (or if) the model's question arrives.
+  function fallbackQuestion(id: string, found: string, master: string | undefined, problem: string) {
+    const f = definitions[id].field;
+    if (master) return `Your material lists the ${f.toLowerCase()} as ${found}, while the brand master records ${master} for ${state.fields['14']}. Which should be used?`;
+    if (found) return problem && problem !== 'Needs confirmation' ? `The ${f.toLowerCase()} came through as ${found}, which looks incorrect (${problem.toLowerCase()}). What should it be?` : `Can you confirm the ${f.toLowerCase()} is ${found}?`;
+    return `What is the ${f.toLowerCase()}?`;
+  }
+
+  // Record one answer: the question and the answer join the conversation, then the next
+  // question follows straight after.
+  function answerQuestion(id: string, section: string, index: number, answer: string, shown: string, question: string) {
+    if (thinking) return;
+    update((st, pl) => {
+      if (answer === '__confirm__') {
+        const t = target(st, section, index);
+        t.meta[id] = { ...t.meta[id], unconfirmed: false, conflict: undefined, source: t.meta[id]?.conflict ? 'Kept over brand master' : 'Confirmed by you' };
+        pl.version++;
+      } else {
+        setField(st, id, answer, section, index, suggestions(id).includes(answer) ? 'Selected by you' : 'Entered by you');
+        const t = target(st, section, index);
+        if (t?.meta[id]) t.meta[id].unconfirmed = false;
+      }
+      pl.messages[section].push({ role: 'agent', text: question, lines: [question], event: 'question' });
+      pl.messages[section].push({ role: 'user', text: shown });
+      pl.drafts[section] = '';
+      evaluateGeneral(st);
+    });
   }
 
   // Suggested answers for a field: its defined option set, or — for
@@ -495,47 +624,6 @@ export default function PlanningView() {
     if (id === '16') return [...new Set((brands.some(b => b.name === state.fields['14']) ? brands.filter(b => b.name === state.fields['14']) : brands).map(b => b.therapeuticArea).filter(Boolean))];
     if (id === '14') return [];
     return (choices(state, id) || []) as string[];
-  }
-
-  // Pick or clear (clicking the chosen option again unselects it).
-  function setAns(id: string, v: string) { setAnswers(a => ({ ...a, [id]: a[id] === v ? '' : v })); }
-
-  // Submit the form: record every answer at once, one thinking beat, ONE acknowledgement,
-  // then (after it) any OMS / AoR notices and the next batch of questions.
-  function submitForm(batch: string[]) {
-    if (thinking) return;
-    const section = p.section;
-    const entries = batch.map(id => [id, (answers[id] || '').trim()] as const).filter(([, v]) => v);
-    if (!entries.length) return;
-    const shown = (id: string, v: string) => (v === '__confirm__' ? value(state, id, section, p.active) : v);
-    update((st, pl) => {
-      const index = pl.active;
-      for (const [id, v] of entries) {
-        if (v === '__confirm__') {
-          const t = target(st, section, index);
-          t.meta[id] = { ...t.meta[id], unconfirmed: false, conflict: undefined, source: t.meta[id]?.conflict ? 'Kept over brand master' : 'Confirmed by you' };
-          pl.version++;
-        } else {
-          setField(st, id, v, section, index, suggestions(id).includes(v) ? 'Selected by you' : 'Entered by you');
-          const t = target(st, section, index);
-          if (t?.meta[id]) t.meta[id].unconfirmed = false;
-        }
-      }
-      pl.messages[section].push({ role: 'user', text: entries.map(([id, v]) => `${definitions[id].field}: ${shown(id, v)}`).join(' · ') });
-    });
-    setAnswers({});
-    setThinking(true);
-    setTimeout(() => {
-      update((st, pl) => {
-        const left = unresolved(st, section, pl.active).filter(isMine).length;
-        const added = entries.length === 1 ? 'that' : `those ${entries.length}`;
-        const first = `Thanks, I’ve added ${added} to the canvas.`;
-        const tail = left > 1 ? `${left} more on your side to go.` : left === 1 ? 'Just one more on your side.' : '';
-        pl.messages[section].push({ role: 'agent', text: [first, tail].filter(Boolean).join(' '), lines: [first, ...(tail ? [tail] : [])] });
-        evaluateGeneral(st);
-      });
-      setThinking(false);
-    }, 750);
   }
 
   const agentMessage = (m: any, key: number) => {
@@ -552,9 +640,11 @@ export default function PlanningView() {
   function flowCanvas() {
     const f = p.flow;
     const stale = f.svg && f.version !== p.version;
+    const versions: any[] = f.versions?.length ? f.versions : f.svg ? [{ revision: f.revision, svg: f.svg, note: 'Initial draft', by: 'Flow Planner Agent', at: null }] : [];
+    const viewing = preview != null ? versions.find(v => v.revision === preview && v.svg) : null;
     return (
       <aside className="flow-canvas" aria-label="Flow Canvas">
-        <div className="canvas-top"><h2>Flow Canvas</h2><span>{busy ? 'Generating flow…' : f.svg ? `Generated · Version ${f.revision}${approvalSent ? ' · Sent for approval' : ''}` : 'No diagram yet'}</span>
+        <div className="canvas-top"><h2>Flow Canvas</h2><span>{busy ? 'Generating flow…' : f.svg ? <><b className={`flow-stage stage-${stageLabel.split(' ')[0].toLowerCase()}`}>{stageLabel}</b> Version {f.revision}</> : 'Preparing initial draft'}</span>
           <div className="canvas-controls">
             <Btn aria-label="Zoom out" onClick={() => update((_, pl) => { pl.flow.zoom = Math.max(0.2, pl.flow.zoom - 0.1); })}>−</Btn>
             <output>{Math.round(f.zoom * 100)}%</output>
@@ -563,6 +653,31 @@ export default function PlanningView() {
             <Btn aria-label="Pan canvas" aria-pressed={!!f.pan} onClick={() => update((_, pl) => { pl.flow.pan = !pl.flow.pan; })}>✥</Btn>
           </div>
         </div>
+        {f.svg && (
+          <div className="version-bar">
+            <label htmlFor="flow-version">Version</label>
+            <select id="flow-version" value={preview ?? f.revision} onChange={e => { const r = Number(e.target.value); setPreview(r === f.revision ? null : r); }}>
+              {[...versions].reverse().map((v: any) => <option key={v.revision} value={v.revision} disabled={!v.svg && v.revision !== f.revision}>v{v.revision} · {v.note}{v.revision === f.revision ? ' (current)' : ''}</option>)}
+            </select>
+            {viewing && <><span className="version-viewing">Viewing v{viewing.revision}</span><Btn disabled={busy || thinking} onClick={() => restoreVersion(viewing.revision)}>Restore this version</Btn><Btn onClick={() => setPreview(null)}>Back to current</Btn></>}
+            <Btn className="history-toggle" aria-expanded={historyOpen} onClick={() => setHistoryOpen(o => !o)}>{historyOpen ? 'Hide history' : 'History & audit'}</Btn>
+          </div>
+        )}
+        {historyOpen && f.svg && (
+          <div className="version-panel">
+            <section><h3>Version history</h3><ol>
+              {[...versions].reverse().map((v: any) => (
+                <li key={v.revision} className={v.revision === f.revision ? 'current' : ''}>
+                  <div><strong>v{v.revision}</strong> {v.note}<small>{v.by} · {fmtWhen(v.at)}</small></div>
+                  {v.revision === f.revision ? <em>Current</em> : v.svg ? <Btn onClick={() => setPreview(v.revision)}>View</Btn> : <em>Archived</em>}
+                </li>))}
+            </ol></section>
+            <section><h3>Audit trail</h3><ol className="audit-list">
+              {[...(f.audit || [])].reverse().map((a: any, i: number) => <li key={i}><span>{fmtWhen(a.at)}</span><strong>{a.action}</strong><small>{a.by} · v{a.revision}</small></li>)}
+              {!(f.audit || []).length && <li><small>No activity recorded yet.</small></li>}
+            </ol></section>
+          </div>
+        )}
         {stale && <p className="flow-update">Campaign details have changed. The current flow is unchanged until you ask Flow Planner to update it.</p>}
         <div ref={viewport} className={`canvas-viewport ${f.pan ? 'panning' : ''}`} tabIndex={0} aria-label="Scrollable flow diagram"
           onPointerDown={e => { if (!f.pan) return; const v = viewport.current!; drag.current = { x: e.clientX, y: e.clientY, left: v.scrollLeft, top: v.scrollTop }; v.setPointerCapture(e.pointerId); }}
@@ -574,13 +689,13 @@ export default function PlanningView() {
                 <div className="flow-nodes" aria-hidden="true">{[0, 1, 2, 3].map(i => <span key={i} style={{ display: 'contents' }}>{i > 0 && <span className="flow-connector">→</span>}<div className="flow-skeleton"><i /><i /></div></span>)}</div>
               </div>
             ) : !f.svg ? (
-              <div className="flow-empty"><AgentOrb size={54} quality="low" /><h3>Ready to create the initial campaign flow</h3><p>The diagram will appear here after you instruct Flow Planner to generate it.</p></div>
+              <div className="flow-empty"><AgentOrb size={54} quality="low" /><h3>Preparing the initial draft</h3><p>Flow Planner generates the first draft from the campaign details captured so far.</p></div>
             ) : (
-              <div className="flow-svg" style={{ opacity: busy ? 0.45 : 1, transition: 'opacity 200ms' }} dangerouslySetInnerHTML={{ __html: f.svg }} />
+              <div className="flow-svg" style={{ opacity: busy ? 0.45 : 1, transition: 'opacity 200ms' }} dangerouslySetInnerHTML={{ __html: viewing ? viewing.svg : f.svg }} />
             )}
           </div>
         </div>
-        <footer><span>Generated by the Accelerate segmentation engine · block codes (B1, B2 …) stay stable across edits.</span><span>{busy ? 'Working…' : 'Awaiting instruction'}</span></footer>
+        <footer><span>Generated by the Campaign Accelerator segmentation engine · block codes (B1, B2 …) stay stable across edits.</span><span>{busy ? 'Working…' : viewing ? `Previewing v${viewing.revision} · read only` : 'Awaiting instruction'}</span></footer>
       </aside>
     );
   }
@@ -616,8 +731,8 @@ export default function PlanningView() {
             <div><Signature agent={flow ? 'Flow Planner Agent' : 'Requirement Collection Agent'} /><h1 ref={heading} tabIndex={-1} className={flow ? 'sr-only' : undefined}>{headingText}</h1></div>
           </div>
           <div className="conversation-thread" ref={thread} tabIndex={0} aria-label="Conversation history">
-            {flow && !history.length && <><h2>I’m ready to create the initial campaign flow.</h2><p>I’ll use the campaign details captured so far; anything still pending is simply left out. I can use the campaign context and the campaign information currently available.</p><strong>What would you like me to do?</strong></>}
-            {history.map((m: any, i: number) => m.role === 'user' ? <div key={i} className="conversation-message user-message">{m.text}</div> : flow || sa ? <div key={i} className="conversation-message agent-message">{m.text}</div> : agentMessage(m, i))}
+            {flow && !history.length && <><h2>Preparing the initial draft of the campaign flow.</h2><p>I’m using the campaign details captured so far; anything still pending is simply left out.</p></>}
+            {history.map((m: any, i: number) => m.role === 'user' ? <div key={i} className="conversation-message user-message">{m.text}</div> : sa ? <div key={i} className="conversation-message agent-message">{m.text}</div> : agentMessage(m, i))}
             {(thinking || busy) && <div className="story-thinking" role="status"><span className="dots" aria-hidden="true"><i /><i /><i /></span>{flow ? 'Flow Planner is working on it' : 'NORA is thinking'}</div>}
             {thinking ? null : sa ? <>
               <p>I’ve organised the General campaign context so you can review what is available before making your validation decision.</p>
@@ -636,11 +751,13 @@ export default function PlanningView() {
               )}
             </> : flow ? (
               <div className="suggestions">
-                {!p.flow.svg ? <Btn disabled={busy} onClick={() => submit('Generate the initial campaign flow')}>Generate the initial campaign flow</Btn> : <Btn disabled={busy} onClick={() => submit('Update the flow using the latest campaign details')}>Update the flow using the latest campaign details</Btn>}
                 {p.flow.svg && <>
+                  <Btn disabled={busy} onClick={() => submit('Update the flow using the latest campaign details')}>Update the flow using the latest campaign details</Btn>
                   <Btn onClick={() => { setDraft('Add a decision block after B3 asking '); focusComposer(); setNotice('Name a block by the code printed on the diagram (B1, B2, …).'); }}>Add a step after a block</Btn>
                   <Btn onClick={() => { setDraft('Delete block '); focusComposer(); }}>Remove a block</Btn>
-                  <Btn className={approvalSent ? 'done' : ''} disabled={busy || approvalSent} onClick={sendForApproval}>{approvalSent ? 'Sent for approval ✓' : approval ? 'Send updated flow for approval' : 'Send for approval'}</Btn>
+                  {!isFinal
+                    ? <Btn className="plan-primary" disabled={busy || thinking} onClick={finalizeDraft}>Finalize draft</Btn>
+                    : <Btn className={approvalSent ? 'done' : 'plan-primary'} disabled={busy || approvalSent} onClick={sendForApproval}>{approvalSent ? 'Sent for approval ✓' : approval ? 'Send updated flow for approval' : 'Send for approval'}</Btn>}
                 </>}
               </div>
             ) : story()}
@@ -652,7 +769,7 @@ export default function PlanningView() {
             <input ref={attach} type="file" className="sr-only" multiple tabIndex={-1} aria-label="Add supporting material"
               onChange={e => { const files = [...(e.target.files || [])]; e.target.value = ''; if (files.length) { update(st => { st.material.files = files; st.material.notes = ''; st.material.processing = { startedAt: Date.now(), complete: false }; }); setStage('processing'); } }} />
             <p className="upload-caption">{flow ? 'Flow Planner acts only on your instruction.' : 'NORA will organise what you share into Campaign Canvas.'}</p>
-            <p className="planning-demo">Saved to the Accelerate server · Source conflicts stay flagged</p>
+            <p className="planning-demo">Saved to Campaign Accelerator · Source conflicts stay flagged</p>
             <div className="planning-notice" role="status">{notice}</div>
           </div>
         </section>

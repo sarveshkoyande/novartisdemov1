@@ -20,7 +20,7 @@ export default function UploadView() {
   const hasContent = draft.files.length > 0 || draft.notes.trim().length > 0;
 
   useEffect(() => {
-    document.title = 'Accelerate · Upload campaign material';
+    document.title = 'Campaign Accelerator · Upload campaign material';
     heading.current?.focus({ preventScroll: true });
     // Keep drops outside the target from navigating away and losing the draft.
     const prevent = (e: DragEvent) => { if ([...(e.dataTransfer?.types || [])].includes('Files')) e.preventDefault(); };
