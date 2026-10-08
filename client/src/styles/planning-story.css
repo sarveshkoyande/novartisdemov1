@@ -170,13 +170,6 @@ input:focus, input:focus-visible, textarea:focus, textarea:focus-visible, select
 .conversation-thread::-webkit-scrollbar { display:none; width:0; height:0; }
 
 
-/* Role switch: the profile at the top right is a button. */
-.accelerate-profile .role-switch { display:flex; align-items:center; gap:10px; padding:4px 10px 4px 4px; background:transparent; border:1px solid transparent; border-radius:999px; text-align:left; cursor:pointer; transition:border-color 160ms ease, background 160ms ease; }
-.accelerate-profile .role-switch:hover { border-color:#dadada; background:#fcfcfc; }
-.accelerate-profile .role-text { display:block; }
-.accelerate-profile .role-text strong, .accelerate-profile .role-text span { display:block; }
-.role-swap { color:#7a7a7a; font-size:13px; }
-.role-switch:hover .role-swap { color:#d64100; }
 
 /* Optional extras inside the form */
 .story-optional { margin:22px 0 0; padding-top:16px; border-top:1px dashed #dadada; }

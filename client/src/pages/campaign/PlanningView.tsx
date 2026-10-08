@@ -482,8 +482,16 @@ export default function PlanningView() {
     const done = s === 'General' ? p.validation === 'validated' : sectionStatus(state, s) === 'Complete';
     const othersPending = !done && withOthers.length > 0;
     const others = ['General', 'Contact', 'Email', 'Touchpoint'].filter(x => x !== s && sectionStatus(state, x) !== 'Complete' && !(x === 'General' && p.validation === 'validated'));
+    // Several emails: when this one is done, NORA moves on to the next email that still
+    // needs the Delivery Manager instead of declaring the whole section finished.
+    const multi = ['Email', 'Touchpoint'].includes(s) && p.emails.length > 1;
+    const emailOpen = (j: number) => unresolved(state, s, j).filter((id: string) => isMine(id) && !inheritedIds.includes(id) && !target(state, s, j)?.meta[id]?.waiting).length;
+    const nextEmail = multi ? p.emails.findIndex((_: unknown, j: number) => j !== i && emailOpen(j) > 0) : -1;
+    const toEmail = (j: number) => update((_, pl) => { pl.active = j; pl.editing = null; });
     const pills = (
       <div className="story-pills">
+        {nextEmail >= 0 && <Btn className="plan-primary" onClick={() => toEmail(nextEmail)}>Continue to {label(s, nextEmail)}</Btn>}
+        {s === 'Email' && <Btn onClick={() => update((st, pl) => { pl.active = addEmail(st); pl.editing = null; })}>+ Add email</Btn>}
         {others.map(x => <Btn key={x} onClick={() => navigateSection(x)}>{x === 'Touchpoint' ? 'Touchpoints' : x}</Btn>)}
         <Btn onClick={() => update((_, pl) => { pl.view = 'flow'; })}>Open Flow Planner</Btn>
         <Btn onClick={toWorkspace}>Campaign workspace</Btn>
@@ -516,7 +524,7 @@ export default function PlanningView() {
     );
     if (done || !open.length) return (
       <div className="story-ask">
-        <p className="story-lead">{othersPending ? `That’s everything on your side of ${s}.` : `${s} Details are complete.`}</p>
+        <p className="story-lead">{nextEmail >= 0 ? `${label(s, i)} is done. ${label(s, nextEmail)} still needs a few details from you.` : othersPending ? `That’s everything on your side of ${s}.` : `${s} Details are complete.`}</p>
         {s === 'Email' && <p className="story-note">The subject line and pre-header are optional. Tell me in the message box if you’d like to add them.</p>}
         
         {othersPending && <p className="story-note">{(() => {
@@ -577,7 +585,7 @@ export default function PlanningView() {
               <button type="button" className="chip-quiet" onClick={() => setSkipped(x => [...x, key])}>Skip for now</button>
             </div>
             {!options.length && !clashMeta && <p className="story-hint">{confirming ? 'Or type a different value below.' : 'Type your answer in the message box below.'}</p>}
-            <small className="story-count">{queue.length > 1 ? `${queue.length - 1} more after this` : 'Last one on your side'}</small>
+            <small className="story-count">{multi ? `${label(s, i)} of ${p.emails.length} · ` : ''}{queue.length > 1 ? `${queue.length - 1} more after this` : multi && nextEmail >= 0 ? `Last one for this email, then ${label(s, nextEmail)}` : 'Last one on your side'}</small>
           </div>
         )}
         {waiting.length > 0 && <p className="story-note">Waiting on: {waiting.map((id: string) => definitions[id].field).join(' · ')}</p>}

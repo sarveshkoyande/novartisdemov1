@@ -11,7 +11,7 @@
 .accelerate-header button { background:none; border:0; padding:0; color:#616161; font-size:13px; }
 .accelerate-header nav button[aria-current] { color:#161616; font-weight:700; border-bottom:2px solid #d64100; }
 .accelerate-profile { margin-left:auto; display:flex; align-items:center; gap:10px; }
-.accelerate-profile > button { padding-right:20px; margin-right:10px; border-right:1px solid #dadada; font-size:12px; }
+.accelerate-profile > button:not(.role-switch) { padding-right:20px; margin-right:10px; border-right:1px solid #dadada; font-size:12px; }
 .accelerate-avatar { display:grid; place-items:center; width:32px; height:32px; border-radius:50%; background:#f2f2f2; color:#d64100; font-size:12px; font-weight:700; }
 .accelerate-profile strong,.accelerate-profile div > span { display:block; font-size:12px; line-height:15px; }
 .accelerate-profile div > span { font-size:11.5px; color:#616161; }
@@ -94,7 +94,7 @@
 .dash-demo-note { font-size:11px; margin:20px 0 0; color:var(--text-muted); }
 .dash-notice { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); width:max-content; max-width:calc(100vw - 40px); background:#161616; color:white; padding:14px 20px; border-radius:8px; font-size:14px; box-shadow:var(--shadow-soft); z-index:100; }
 @media(max-width:1200px) { .dash-grid { grid-template-columns:minmax(0,1fr); } .dash-aside { grid-template-columns:1fr 1fr; } .accelerate-brand { width:240px; } }
-@media(max-width:760px) { .accelerate-header { height:auto; min-height:64px; padding:12px 20px 0; flex-wrap:wrap; } .accelerate-brand { width:auto; } .accelerate-header nav { order:3; width:100%; height:44px; gap:24px; } .accelerate-profile > button { display:none; } .accelerate-profile div { display:none; } .dashboard-main { padding:24px 20px!important; } .dash-greeting { align-items:flex-start; flex-direction:column; gap:16px; } .dash-greeting-line { flex-direction:column; gap:4px; } .dash-nora { align-items:baseline; } .dash-support,.dash-aside { grid-template-columns:1fr; } .dash-order { display:none; } .dash-panel-heading { padding:0 16px; } .dash-support-item { margin:0 16px; } }
+@media(max-width:760px) { .accelerate-header { height:auto; min-height:64px; padding:12px 20px 0; flex-wrap:wrap; } .accelerate-brand { width:auto; } .accelerate-header nav { order:3; width:100%; height:44px; gap:24px; } .accelerate-profile .role-text { display:none; } .accelerate-profile div { display:none; } .dashboard-main { padding:24px 20px!important; } .dash-greeting { align-items:flex-start; flex-direction:column; gap:16px; } .dash-greeting-line { flex-direction:column; gap:4px; } .dash-nora { align-items:baseline; } .dash-support,.dash-aside { grid-template-columns:1fr; } .dash-order { display:none; } .dash-panel-heading { padding:0 16px; } .dash-support-item { margin:0 16px; } }
 .dash-action.link { display:block; line-height:16px; }
 .dash-support-item p { margin-bottom:8px; }
 
@@ -107,3 +107,10 @@
 .dash-support > .dash-panel { max-height:340px; overflow-y:auto; scrollbar-width:thin; }
 .dash-aside > .dash-panel { max-height:380px; overflow-y:auto; scrollbar-width:thin; }
 .dash-aside > .dash-panel .dash-panel-heading, .dash-support > .dash-panel .dash-panel-heading { position:sticky; top:0; z-index:1; background:#fff; }
+/* Role switch: the profile at the top right is a button. */
+.accelerate-profile .role-switch { display:flex; align-items:center; gap:10px; padding:4px 10px 4px 4px; background:transparent; border:1px solid transparent; border-radius:999px; text-align:left; cursor:pointer; transition:border-color 160ms ease, background 160ms ease; }
+.accelerate-profile .role-switch:hover { border-color:#dadada; background:#fcfcfc; }
+
+.accelerate-profile .role-text strong, .accelerate-profile .role-text span { display:block; }
+.role-swap { color:#7a7a7a; font-size:13px; }
+.role-switch:hover .role-swap { color:#d64100; }
