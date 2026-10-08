@@ -69,6 +69,18 @@ export default function ReviewView() {
           <Signature />
           <h1 id="review-heading" ref={heading} tabIndex={-1}>Your campaign workspace is ready to review.</h1>
           <p className="review-intro">I’ve mapped the information I could find. Review what’s prepared and complete anything that’s still missing.</p>
+          {role === 'SA' && (() => {
+            // The Solution Architect is told when a flow draft is waiting for their review.
+            const f = planning(state).flow;
+            const pendingReview = !!f.svg && f.finalizedRevision !== f.revision;
+            return pendingReview && (
+              <button type="button" className="review-alert" onClick={openFlow}>
+                <i aria-hidden="true" />
+                <span><strong>Campaign flow generated</strong>Version {f.revision} is waiting for your review.</span>
+                <em>Review flow →</em>
+              </button>
+            );
+          })()}
           <div className="review-sections">
             {sections.map(section => {
               const rs = roleSection(state, section.domain, role);
