@@ -2,7 +2,7 @@
   "name": "novartis-accelerate-server",
   "version": "1.0.0",
   "private": true,
-  "description": "Backend for the Novartis Accelerate requirement gathering mock — proxies the chat fill-tool to Gemini so the API key never touches the browser.",
+  "description": "Backend for the Campaign Accelerator requirement gathering mock — proxies the chat fill-tool to Gemini so the API key never touches the browser.",
   "main": "server.js",
   "scripts": {
     "start": "node --use-system-ca server.js",

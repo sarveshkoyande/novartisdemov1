@@ -195,7 +195,7 @@ function register(app, { ai, model: MODEL }) {
     const blockList = flowPlanner.blocks(currentInputs || {})
       .map((b) => `${b.code}: ${b.label}${b.detail ? ` — ${b.detail}` : ''}`)
       .join('\n');
-    const system = `You edit the inputs for a Novartis Accelerate campaign's Segmentation Flow diagram generator. ` +
+    const system = `You edit the inputs for a Campaign Accelerator campaign's Segmentation Flow diagram generator. ` +
       `Current input values (JSON): ${JSON.stringify(currentInputs || {})}. ` +
       `The CURRENT diagram's printed blocks, in order (code: label — current text):\n${blockList}\n\n` +
       `If the user names a field (audience, campaign name, segments, ...), set that field. ` +
