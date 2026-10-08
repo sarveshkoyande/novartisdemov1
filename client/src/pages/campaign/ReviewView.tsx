@@ -69,7 +69,6 @@ export default function ReviewView() {
           <Signature />
           <h1 id="review-heading" ref={heading} tabIndex={-1}>Your campaign workspace is ready to review.</h1>
           <p className="review-intro">I’ve mapped the information I could find. Review what’s prepared and complete anything that’s still missing.</p>
-          <p className="review-start">Click a section below to get started with adding your campaign details.</p>
           <div className="review-sections">
             {sections.map(section => {
               const rs = roleSection(state, section.domain, role);
@@ -93,6 +92,7 @@ export default function ReviewView() {
               <span className="review-arrow"><img src="/assets/review/arrow.svg" alt="" /></span>
             </button>
           </div>
+          <p className="review-start">Click a section to get started with adding your campaign details.</p>
           <Composer value={state.material.reviewNotes || ''} onChange={v => mutate(s => { s.material.reviewNotes = v; })} onSend={submit} disabled={busy} onAttach={() => setStage('upload')} />
           <p className="upload-caption">NORA will organise what you share into Campaign Canvas.</p>
           <p className="upload-demo-note">Status reflects the saved campaign. Source conflicts stay flagged for confirmation.</p>
