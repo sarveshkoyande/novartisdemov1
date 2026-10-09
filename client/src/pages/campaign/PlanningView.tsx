@@ -757,7 +757,7 @@ export default function PlanningView() {
     <>
       <AccelerateHeader onNotice={setNotice} />
       <div className="planning-context">
-        {flow ? <Btn onClick={() => update((_, pl) => { pl.section = 'General'; pl.mode = 'REVIEW ALL'; pl.view = 'memory'; })}>← General Details</Btn> : <Btn onClick={toWorkspace}>← Campaign workspace</Btn>}
+        <Btn onClick={toWorkspace}>← Campaign workspace</Btn>
         <span className="context-divider" /><span>{state.fields['14'] || 'New Campaign'} · {({ 'New Brand Launch': 'New Brand', 'New Indication Launch': 'New Indication' } as Record<string, string>)[state.fields['12']] || 'Existing Brand'}</span><span>/</span><strong>{flow ? 'Flow Planner' : s}</strong>
         <div className="planning-context-end">
           {flow ? <small>Built from the details captured so far</small> : dirty ? <small className="save-state dirty"><i aria-hidden="true" />Unsaved changes</small> : <small className="save-state">{saving === 'saving' ? 'Saving…' : saving === 'error' ? 'Not saved — check the server' : 'All changes saved'}</small>}
