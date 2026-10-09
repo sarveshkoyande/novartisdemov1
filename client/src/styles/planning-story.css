@@ -44,14 +44,14 @@
 .mem-card.recent { background:#fff0ea; }
 .mem-card.has-issue { box-shadow:inset 3px 0 0 #ff4e00; }
 .mem-card-main { min-width:0; flex:1; }
-.mem-label { display:block; font-size:10.5px; line-height:14px; color:#616161; }
+.mem-label { display:block; font-size:12.5px; line-height:17px; color:#616161; }
 .mem-label em { font-style:normal; }
-.mem-value { display:block; font-size:12px; line-height:16px; font-weight:500; color:#3f3f3f; overflow-wrap:anywhere; margin-top:3px; }
+.mem-value { display:block; font-size:14px; line-height:19px; font-weight:500; color:#3f3f3f; overflow-wrap:anywhere; margin-top:3px; }
 .mem-value.empty { font-weight:400; }
-.mem-card small { display:block; font-size:10px; line-height:14px; color:#616161; margin-top:2px; }
+.mem-card small { display:block; font-size:12px; line-height:16px; color:#616161; margin-top:2px; }
 .mem-actions { display:flex; align-items:center; gap:6px; max-width:45%; flex-shrink:0; }
-.mem-source { font-size:10px; color:#7a7a7a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.mem-actions button { background:none; border:0; padding:4px; color:#d64100; font-size:11px; cursor:pointer; }
+.mem-source { font-size:12px; color:#7a7a7a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mem-actions button { background:none; border:0; padding:4px; color:#d64100; font-size:13px; cursor:pointer; }
 .mem-card .memory-edit { margin-top:4px; }
 
 /* General complete: summary card + collapsed group rows */
@@ -114,7 +114,7 @@
 .mem-tally-link { margin-left:auto; background:none; border:0; padding:0; color:#d64100; font-size:12px; cursor:pointer; }
 .mem-dot.others i { background:#7a7a7a; }
 .mem-group.compact { padding:12px 0; }
-.mem-field-owner { margin-left:6px; padding:0 5px; border-radius:6px; background:#f2f2f2; font:500 9px/14px 'Accelerate Mono',ui-monospace,monospace; color:#3f3f3f; }
+.mem-field-owner { margin-left:6px; padding:0 5px; border-radius:6px; background:#f2f2f2; font:500 11px/16px 'Accelerate Mono',ui-monospace,monospace; color:#3f3f3f; }
 
 /* LIVE and REVIEW ALL share one layout: the canvas never changes width. */
 .is-planning .audit-shell { grid-template-columns:60% 40%; }
