@@ -138,7 +138,7 @@
 .version-bar select {font:inherit;padding:5px 8px;border:1px solid #d9d9d9;border-radius:6px;background:#fff;max-width:280px;}
 .version-viewing {color:#8a3b12;font-weight:600;}
 .version-bar .history-toggle {margin-left:auto;}
-.version-panel {display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 28px 12px;padding:12px 14px;border:1px solid #e6e6e6;border-radius:8px;background:#fafafa;font-size:12px;max-height:220px;overflow:auto;}
+.version-panel {display:grid;grid-template-columns:1fr;gap:16px;margin:0 28px 12px;padding:12px 14px;border:1px solid #e6e6e6;border-radius:8px;background:#fafafa;font-size:12px;max-height:220px;overflow:auto;}
 .version-panel h3 {font-size:12px;margin:0 0 8px;}
 .version-panel ol {list-style:none;margin:0;padding:0;display:grid;gap:6px;}
 .version-panel li {display:flex;align-items:center;justify-content:space-between;gap:8px;}

@@ -703,7 +703,7 @@ export default function PlanningView() {
               {[...versions].reverse().map((v: any) => <option key={v.revision} value={v.revision} disabled={!v.svg && v.revision !== f.revision}>v{v.revision} · {v.note}{v.revision === f.revision ? ' (current)' : ''}</option>)}
             </select>
             {viewing && <><span className="version-viewing">Viewing v{viewing.revision}</span><Btn disabled={busy || thinking} onClick={() => restoreVersion(viewing.revision)}>Restore this version</Btn><Btn onClick={() => setPreview(null)}>Back to current</Btn></>}
-            <Btn className="history-toggle" aria-expanded={historyOpen} onClick={() => setHistoryOpen(o => !o)}>{historyOpen ? 'Hide history' : 'History & audit'}</Btn>
+            <Btn className="history-toggle" aria-expanded={historyOpen} onClick={() => setHistoryOpen(o => !o)}>{historyOpen ? 'Hide history' : 'Version history'}</Btn>
           </div>
         )}
         {historyOpen && f.svg && (
@@ -711,13 +711,9 @@ export default function PlanningView() {
             <section><h3>Version history</h3><ol>
               {[...versions].reverse().map((v: any) => (
                 <li key={v.revision} className={v.revision === f.revision ? 'current' : ''}>
-                  <div><strong>v{v.revision}</strong> {v.note}<small>{v.by} · {fmtWhen(v.at)}</small></div>
+                  <div><strong>v{v.revision}</strong> {v.note}{v.revision === f.finalizedRevision && ' · Finalized'}{(f.approval as any)?.revision === v.revision && ' · Sent for approval'}<small>{v.by} · {fmtWhen(v.at)}</small></div>
                   {v.revision === f.revision ? <em>Current</em> : v.svg ? <Btn onClick={() => setPreview(v.revision)}>View</Btn> : <em>Archived</em>}
                 </li>))}
-            </ol></section>
-            <section><h3>Audit trail</h3><ol className="audit-list">
-              {[...(f.audit || [])].reverse().map((a: any, i: number) => <li key={i}><span>{fmtWhen(a.at)}</span><strong>{a.action}</strong><small>{a.by} · v{a.revision}</small></li>)}
-              {!(f.audit || []).length && <li><small>No activity recorded yet.</small></li>}
             </ol></section>
           </div>
         )}
