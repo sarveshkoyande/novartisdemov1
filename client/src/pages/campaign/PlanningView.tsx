@@ -474,11 +474,11 @@ export default function PlanningView() {
                       {s === 'Email' ? <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3.5 6.5 8.5 6.5 8.5-6.5" /></> : <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></>}
                     </svg>
                     <strong>{String(n + 1).padStart(2, '0')}</strong>
-                    <span className={`tile-status ${tone}`}><i aria-hidden="true" />{text}</span>
+                    <i className={`tile-dot ${tone}`} aria-hidden="true" />
                   </Btn>
                 );
               })}
-              {s === 'Email' && <Btn className="object-tile add-object" aria-label="Add email" onClick={() => update((st, pl) => { pl.active = addEmail(st); pl.section = 'Email'; pl.view = 'memory'; pl.editing = null; })}><span aria-hidden="true" className="tile-plus">+</span><span className="tile-status">Add email</span></Btn>}
+              {s === 'Email' && <Btn className="object-tile add-object" aria-label="Add email" onClick={() => update((st, pl) => { pl.active = addEmail(st); pl.section = 'Email'; pl.view = 'memory'; pl.editing = null; })}><span aria-hidden="true" className="tile-plus">+</span></Btn>}
             </div>
             {!t && <p className="memory-description">No objects yet. Add an email to prepare linked Touchpoint context.</p>}
             {t && s === 'Touchpoint' && <p className="linked-email">Linked to: <Btn onClick={() => navigateSection('Email')}>{label('Email', i)} →</Btn></p>}
