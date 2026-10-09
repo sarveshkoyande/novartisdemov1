@@ -75,7 +75,7 @@ export default function ReviewView() {
               const status = rs.tone === 'needs' ? 'Needs input' : rs.tone === 'waiting' ? `With ${rs.owners.join(' and ')}` : rs.tone === 'pending' ? 'Not started' : 'Complete';
               const req = required(state, section.domain);
               return (
-                <button key={section.domain} type="button" className="review-card" onClick={() => openSection(section.domain)}>
+                <button key={section.domain} type="button" className={`review-card${rs.tone === 'needs' ? ' needs-review' : ''}`} onClick={() => openSection(section.domain)}>
                   <span className="review-card-top"><span className="review-icon"><img src={`/assets/review/${section.icon}.svg`} alt="" /></span><span className={`review-status ${rs.tone === 'needs' ? 'needs-input' : rs.tone === 'waiting' || rs.tone === 'pending' ? 'with-others' : ''}`}>{status}</span></span>
                   <span className="review-count">{['Email', 'Touchpoint'].includes(section.domain) ? `${planning(state).emails.length} linked objects` : `${req.length - unresolved(state, section.domain, undefined).length}/${req.length} captured`}</span>
                   <strong>{section.label}</strong>

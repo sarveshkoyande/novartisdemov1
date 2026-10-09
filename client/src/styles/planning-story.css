@@ -79,7 +79,6 @@
 .mem-open strong { font-size:14px; font-weight:500; color:#161616; }
 .mem-open .mem-dot { margin-left:auto; }
 .mem-open-link { font-size:12.5px; color:#d64100; }
-.object-list .mem-dot { margin:4px 0 0; }
 
 /* Keep the context bar on one line: demo controls are secondary. */
 .planning-context button, .planning-context span, .planning-context strong { white-space:nowrap; }
@@ -190,3 +189,20 @@ input:focus, input:focus-visible, textarea:focus, textarea:focus-visible, select
 .story-count { display:block; margin-top:10px; font-size:12px; color:#9a9a9a; }
 @media(prefers-reduced-motion:reduce) { .story-question { animation:none; } }
 .mem-empty {margin:24px 0 0;padding:18px 20px;border:1px dashed #dadada;border-radius:10px;color:#7a7a7a;font-size:14px;text-align:center;}
+/* Email / Touchpoint objects: horizontal carousel, five tiles per pane. */
+.object-list { display:grid; grid-auto-flow:column; grid-auto-columns:calc((100% - 32px) / 5); gap:8px; margin:0 0 20px; padding:6px 2px 8px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:thin; }
+.object-list .object-tile { scroll-snap-align:start; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; min-width:0; padding:12px 6px 10px; border:1px solid #e3e3e3; border-radius:12px; background:#fff; color:#3f3f3f; cursor:pointer; transition:border-color 160ms ease, box-shadow 160ms ease; }
+.object-list .object-tile:hover { border-color:#d64100; }
+.object-list .object-tile[aria-pressed=true] { border-color:#161616; box-shadow:0 0 0 1px #161616; color:#161616; }
+.object-list .object-tile svg { width:24px; height:24px; }
+.object-list .object-tile strong { font-size:15px; line-height:18px; }
+.object-list .tile-status { display:flex; align-items:center; gap:4px; max-width:100%; font-size:11px; line-height:14px; color:#7a7a7a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.object-list .tile-status i { width:6px; height:6px; border-radius:50%; flex:none; background:#9a9a9a; }
+.object-list .tile-status.needs i { background:#d64100; }
+.object-list .tile-status.needs { color:#d64100; font-weight:600; }
+.object-list .tile-status.complete i { background:#2e7d4f; }
+.object-list .add-object { border-style:dashed; color:#d64100; }
+.object-list .tile-plus { font-size:24px; line-height:24px; }
+.object-list .object-tile.needs-you { border:2px solid #d64100; background:#fff8f4; animation:object-pulse 1.8s ease-in-out infinite; }
+@media(prefers-reduced-motion:reduce) { .object-list .object-tile.needs-you { animation:none; } }
+@keyframes object-pulse { 0%,100% { box-shadow:0 0 0 0 #d6410059; } 50% { box-shadow:0 0 0 6px #d6410000; } }

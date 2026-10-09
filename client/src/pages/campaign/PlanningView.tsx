@@ -460,13 +460,25 @@ export default function PlanningView() {
         )}
         {['Email', 'Touchpoint'].includes(s) && (
           <>
+            {/* Emails / touchpoints as a horizontal carousel of tiles, five per pane. */}
             <div className="object-list" aria-label={`${s} objects`}>
-              {p.emails.map((_: unknown, n: number) => (
-                <Btn key={n} aria-pressed={i === n} onClick={() => update((_st, pl) => { pl.active = n; pl.editing = null; })}>
-                  <strong>{label(s, n)}</strong>{s === 'Touchpoint' && <small>Linked to {label('Email', n)}</small>}{(() => { const left = unresolved(state, s, n).filter((id: string) => !(s === 'Touchpoint' && ['45', '46', '47'].includes(id))); return left.some(isMine) ? statusDot('needs', 'Needs input') : left.length ? statusDot('others', `With ${[...new Set(left.map(ownerOf))].join(' · ')}`) : statusDot('complete', 'Complete'); })()}
-                </Btn>
-              ))}
-              {s === 'Email' && <Btn className="add-object" onClick={() => update((st, pl) => { pl.active = addEmail(st); pl.section = 'Email'; pl.view = 'memory'; pl.editing = null; })}>+ Add email</Btn>}
+              {p.emails.map((_: unknown, n: number) => {
+                const left = unresolved(state, s, n).filter((id: string) => !(s === 'Touchpoint' && ['45', '46', '47'].includes(id)));
+                const mine = left.some(isMine);
+                const tone = mine ? 'needs' : left.length ? 'others' : 'complete';
+                const text = mine ? 'Needs you' : left.length ? `With ${[...new Set(left.map(ownerOf))].join(' · ')}` : 'Complete';
+                return (
+                  <Btn key={n} className={`object-tile${mine ? ' needs-you' : ''}`} aria-pressed={i === n} aria-label={`${label(s, n)}${s === 'Touchpoint' ? ` (linked to ${label('Email', n)})` : ''}: ${text}`} title={`${label(s, n)} · ${text}`}
+                    onClick={() => update((_st, pl) => { pl.active = n; pl.editing = null; })}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      {s === 'Email' ? <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3.5 6.5 8.5 6.5 8.5-6.5" /></> : <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></>}
+                    </svg>
+                    <strong>{String(n + 1).padStart(2, '0')}</strong>
+                    <span className={`tile-status ${tone}`}><i aria-hidden="true" />{text}</span>
+                  </Btn>
+                );
+              })}
+              {s === 'Email' && <Btn className="object-tile add-object" aria-label="Add email" onClick={() => update((st, pl) => { pl.active = addEmail(st); pl.section = 'Email'; pl.view = 'memory'; pl.editing = null; })}><span aria-hidden="true" className="tile-plus">+</span><span className="tile-status">Add email</span></Btn>}
             </div>
             {!t && <p className="memory-description">No objects yet. Add an email to prepare linked Touchpoint context.</p>}
             {t && s === 'Touchpoint' && <p className="linked-email">Linked to: <Btn onClick={() => navigateSection('Email')}>{label('Email', i)} →</Btn></p>}
