@@ -33,4 +33,11 @@
 .review-status.with-others { color:#616161; background:#f2f2f2; border-color:#dadada; }
 .review-status:not(.needs-input):not(.with-others) { color:#161616; }
 .review-start {margin:18px 0 0;font-size:13px;font-weight:600;color:#d64100;}
-.review-card.needs-review { border-color:#d64100; }
+/* Solution Architect: a flow draft awaiting review pulses so it can't be missed. */
+.review-card.needs-review { border:2px solid #d64100; background:#fff8f4; animation:review-pulse 1.8s ease-in-out infinite; }
+.review-card.needs-review:hover { animation-play-state:paused; box-shadow:0 0 0 4px #d6410033; }
+.review-card.needs-review .review-status { color:#fff; background:#d64100; font-weight:600; padding:0 11px; }
+.review-card.needs-review .review-status::before { content:''; display:inline-block; width:7px; height:7px; margin-right:6px; border-radius:50%; background:#fff; vertical-align:1px; animation:review-dot 1.8s ease-in-out infinite; }
+@keyframes review-pulse { 0%,100% { box-shadow:0 0 0 0 #d6410059; } 50% { box-shadow:0 0 0 8px #d6410000; } }
+@keyframes review-dot { 0%,100% { opacity:1; } 50% { opacity:.35; } }
+@media(prefers-reduced-motion:reduce) { .review-card.needs-review, .review-card.needs-review .review-status::before { animation:none; } .review-card.needs-review { box-shadow:0 0 0 4px #d6410033; } }
