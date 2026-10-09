@@ -806,7 +806,6 @@ export default function PlanningView() {
             <input ref={attach} type="file" className="sr-only" multiple tabIndex={-1} aria-label="Add supporting material"
               onChange={e => { const files = [...(e.target.files || [])]; e.target.value = ''; if (files.length) { update(st => { st.material.files = files; st.material.notes = ''; st.material.processing = { startedAt: Date.now(), complete: false }; }); setStage('processing'); } }} />
             <p className="upload-caption">{flow ? 'Flow Planner acts only on your instruction.' : 'NORA will organise what you share into Campaign Canvas.'}</p>
-            <p className="planning-demo">Saved to Campaign Accelerator · Source conflicts stay flagged</p>
             <div className="planning-notice" role="status">{notice}</div>
           </div>
         </section>

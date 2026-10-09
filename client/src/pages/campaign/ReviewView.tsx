@@ -102,7 +102,6 @@ export default function ReviewView() {
           <p className="review-start">Click a section to get started with adding your campaign details.</p>
           <Composer value={state.material.reviewNotes || ''} onChange={v => mutate(s => { s.material.reviewNotes = v; })} onSend={submit} disabled={busy} onAttach={() => setStage('upload')} />
           <p className="upload-caption">NORA will organise what you share into Campaign Canvas.</p>
-          <p className="upload-demo-note">Status reflects the saved campaign. Source conflicts stay flagged for confirmation.</p>
           <p className="upload-feedback" role="status" aria-live="polite">{busy ? 'NORA is mapping your notes…' : feedback}</p>
         </section>
       </main>
