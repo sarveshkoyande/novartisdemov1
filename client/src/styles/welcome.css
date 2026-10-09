@@ -3,7 +3,7 @@
 .is-welcome .progress, .is-welcome .fixture-footer { display: none; }
 .is-welcome .demo-controller { background: #f6f7f5ee; border-color: #f2f2f2; }
 .nora-welcome { text-align: center; padding: 20px 0 100px; position: relative; }
-.nora-presence { height: 224px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; opacity: 0; transform: translateY(6px); transition: opacity 700ms var(--ease), transform 750ms var(--ease); }
+.nora-presence { height: 250px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; opacity: 0; transform: translateY(6px); transition: opacity 700ms var(--ease), transform 750ms var(--ease); }
 .nora-object { position: absolute; top: 2px; width: 204px; height: 204px; transform: scale(1.06); transform-origin: center 55%; transition: transform 800ms var(--ease); }
 .nora-signature { display: flex; align-items: center; gap: 8px; position: relative; font-size: 9px; letter-spacing: 1.3px; color: #616161; opacity: 0; transition: opacity 400ms; }
 .nora-signature > span:first-child { width: 4px; height: 4px; background: #ff4e00; border-radius: 50%; }
@@ -37,7 +37,7 @@
 .nora-welcome.instant-intro .nora-presence, .nora-welcome.instant-intro .nora-signature, .nora-welcome.instant-intro .nora-object, .nora-welcome.instant-intro .nora-choice, .nora-welcome.instant-intro [data-character] { transition-duration: 0ms; transition-delay: 0ms; }
 @media (min-width: 761px) and (max-height: 820px) {
   .nora-welcome { padding-top: 0; }
-  .nora-presence { height: 170px; }
+  .nora-presence { height: 192px; }
   .nora-object { top: 0; width: 154px; height: 154px; }
   .nora-greeting { font-size: 32px; margin: 17px 0 8px; }
   .nora-name { font-size: 19px; margin-bottom: 7px; }
@@ -51,7 +51,7 @@
 @media (max-width: 1050px) { .nora-choices { gap: 13px; } .nora-choice { padding-left: 18px; padding-right: 18px; } }
 @media (max-width: 760px) {
   .nora-welcome { padding: 0 0 115px; }
-  .nora-presence { height: 184px; }
+  .nora-presence { height: 206px; }
   .nora-object { width: 168px; height: 168px; top: 0; }
   .nora-signature { font-size: 7px; letter-spacing: .8px; gap: 6px; }
   .nora-greeting { font-size: 31px; margin: 20px 0 12px; }

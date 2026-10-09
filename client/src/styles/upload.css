@@ -3,7 +3,7 @@
 .is-upload .upload-main { max-width:none; padding:36px 24px 28px; min-height:calc(100vh - 64px); }
 .upload-experience { max-width:1130px; margin:0 auto; text-align:center; }
 #upload-orb { width:185.64px; height:185.64px; margin:0 auto; view-transition-name:nora-discovery; }
-.upload-signature { display:flex; justify-content:center; align-items:center; gap:8px; margin:12px 0 0; font:9px/13.5px Arial,sans-serif; letter-spacing:1.3px; color:#616161; }
+.upload-signature { display:flex; justify-content:center; align-items:center; gap:8px; margin:28px 0 0; font:9px/13.5px Arial,sans-serif; letter-spacing:1.3px; color:#616161; }
 .upload-signature > span:first-child { width:4px; height:4px; border-radius:50%; background:#ff4e00; }
 .upload-signature > span:last-child { color:#7a7a7a; }
 .upload-experience h1 { max-width:650px; margin:0 auto; font:400 38px/45.6px Arial,sans-serif; letter-spacing:-1.3px; color:#161616; }
