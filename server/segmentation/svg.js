@@ -176,15 +176,19 @@ function flowSvg(spec, title, codeMap, opts = {}) {
     const [x, y, w, h] = placed;
     const [fill, accent] = colours(node);
     const dashed = !!(node.tbd && node.tbd.length);
+    // Each block is a group carrying its code, so the canvas can attach hover tools to it.
+    out.push(`<g class="fp-node" data-code="${esc(handle[node.id] || '')}" data-type="${esc(node.type || '')}">`);
     if (node.type === 'note') {
       out.push(...pane(node, x, y, w, h, accent));
       out.push(...codeChip(handle[node.id], node, x, y));
+      out.push('</g>');
       continue;
     }
     out.push(...shape(node, x, y, w, h, fill, accent, dashed));
     out.push(...blockLabel(node, x, y, w, h));
     out.push(...codeChip(handle[node.id], node, x, y));
     if (dashed && node.type !== 'decision' && node.type !== 'stop') out.push(...tbdChip(x, y, w));
+    out.push('</g>');
   }
 
   out.push('</svg>');

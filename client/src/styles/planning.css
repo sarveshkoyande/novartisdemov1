@@ -144,3 +144,16 @@
 .audit-list li {display:grid;grid-template-columns:90px 1fr;justify-content:start;}
 .audit-list li small {grid-column:2;}
 @media(max-width:1100px){.version-panel{grid-template-columns:1fr;}}
+/* Flow canvas hover tools: "+" on a block's right edge opens a shape palette. */
+.flow-svg g.fp-node > :first-child { transition:filter 160ms ease; }
+.flow-svg g.fp-node:hover > :first-child { filter:drop-shadow(0 0 0.5px #d64100) drop-shadow(0 2px 6px #d6410033); }
+.fp-tools {position:absolute;z-index:5;transform:translate(10px,-50%);display:flex;align-items:center;gap:8px;}
+.fp-add {width:26px;height:26px;border-radius:50%;border:1.5px solid #d64100;background:#fff;color:#d64100;font:600 17px/1 Arial,sans-serif;display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 8px #1319260f;transition:background 150ms ease,color 150ms ease,transform 150ms ease;}
+.fp-add:hover,.fp-add[aria-expanded=true] {background:#d64100;color:#fff;transform:scale(1.06);}
+.fp-palette {position:absolute;top:34px;right:-6px;display:grid;grid-template-columns:repeat(4,64px);gap:4px;padding:10px;background:#fff;border:1px solid #e3e3e3;border-radius:12px;box-shadow:0 10px 28px #13192622;animation:fp-in 160ms ease both;}
+.fp-palette-title {grid-column:1 / -1;margin:0 2px 4px;font:600 10px/14px 'Accelerate Mono',monospace;letter-spacing:.8px;text-transform:uppercase;color:#7a7a7a;}
+.fp-palette button {display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px 6px;background:none;border:1px solid transparent;border-radius:8px;color:#3f3f3f;font-size:11px;cursor:pointer;}
+.fp-palette button:hover {border-color:#f2c9b5;background:#fff8f4;color:#d64100;}
+.fp-palette svg {width:22px;height:22px;}
+@keyframes fp-in {from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
+@media(prefers-reduced-motion:reduce){.fp-palette{animation:none;}}

@@ -79,3 +79,79 @@
 
 /* Four cards: two per row on narrower windows. */
 @media (max-width: 1100px) and (min-width: 621px) { .nora-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 640px; } }
+/* Home conversation: replaces the cards once the user types or picks. */
+.nora-choices[hidden] { display:none; }
+.home-thread { max-width:700px; margin:28px auto 0; display:flex; flex-direction:column; gap:12px; text-align:left; }
+.home-msg { margin:0; max-width:85%; font-size:15px; line-height:23px; color:#161616; animation:home-fade 300ms ease both; }
+.home-msg.user { align-self:flex-end; padding:11px 16px; background:#fff; border:1px solid #ececec; border-radius:18px 18px 4px 18px; }
+.home-msg.agent { align-self:flex-start; }
+.home-msg.thinking { display:flex; align-items:center; gap:8px; color:#7a7a7a; font-size:14px; }
+.home-msg .dots { display:inline-flex; gap:4px; }
+.home-msg .dots i { width:5px; height:5px; border-radius:50%; background:#ff4e00; opacity:.25; animation:home-dot 1.2s ease-in-out infinite; }
+.home-msg .dots i:nth-child(2) { animation-delay:.18s; }
+.home-msg .dots i:nth-child(3) { animation-delay:.36s; }
+.home-picker { display:flex; flex-direction:column; gap:6px; padding:12px; background:#fff; border:1px solid #e6e6e6; border-radius:14px; animation:home-fade 300ms ease both; }
+.home-search { height:38px; padding:0 12px; border:1px solid #dadada; border-radius:10px; font:inherit; font-size:14px; outline:none; }
+.home-search:focus { border-color:#d64100; }
+.home-pick { display:flex; flex-direction:column; gap:2px; padding:10px 12px; text-align:left; background:none; border:1px solid transparent; border-radius:10px; cursor:pointer; font:inherit; color:#161616; }
+.home-pick:hover { border-color:#d64100; background:#fff8f4; }
+.home-pick.is-match { border-color:#f2c9b5; background:#fff8f4; }
+.home-pick strong { font-size:14px; font-weight:600; }
+.home-pick span { font-size:12.5px; color:#7a7a7a; }
+.home-picker-empty { margin:6px 12px; font-size:13px; color:#7a7a7a; }
+.home-browse { align-self:flex-start; margin:4px 4px 0; padding:4px 8px; background:none; border:0; color:#d64100; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+.home-chips { display:flex; flex-wrap:wrap; gap:8px; }
+.home-chips button { min-height:34px; padding:4px 14px; background:#fff; border:1px solid #dadada; border-radius:999px; font:inherit; font-size:13.5px; font-weight:500; color:#161616; cursor:pointer; }
+.home-chips button:hover { border-color:#d64100; color:#d64100; }
+.home-chips button.quiet { border-style:dashed; color:#7a7a7a; }
+@keyframes home-fade { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+@keyframes home-dot { 0%,100% { opacity:.25; } 50% { opacity:1; } }
+@media(prefers-reduced-motion:reduce) { .home-msg, .home-picker, .home-msg .dots i { animation:none; } }
+/* Once the user is chatting, the welcome collapses smoothly and the conversation takes the screen. */
+.nora-greeting, .nora-name, .nora-purpose, .nora-invitation { max-height:220px; overflow:hidden; transition:max-height 600ms var(--ease), opacity 350ms ease, margin 600ms var(--ease); }
+.nora-welcome.is-chatting .nora-greeting, .nora-welcome.is-chatting .nora-name, .nora-welcome.is-chatting .nora-purpose, .nora-welcome.is-chatting .nora-invitation { max-height:0; opacity:0; margin-top:0; margin-bottom:0; }
+.nora-presence { transition:height 600ms var(--ease), opacity 700ms var(--ease), transform 750ms var(--ease); }
+.is-home .nora-object { transition:width 600ms var(--ease), height 600ms var(--ease), transform 800ms var(--ease); }
+.is-home .nora-welcome.is-chatting .nora-presence { height:0; opacity:0; overflow:hidden; }
+.is-home .nora-welcome.is-chatting .nora-object { width:72px; height:72px; }
+.is-home .nora-welcome.is-chatting { padding-bottom:0; }
+.is-home .nora-welcome.is-chatting .home-thread { min-height:52vh; margin-top:20px; }
+.is-home .nora-welcome.is-chatting .home-composer { position:sticky; bottom:0; margin-top:16px; padding:12px 0 18px; background:#f2f2f2; }
+@media(prefers-reduced-motion:reduce) { .nora-greeting, .nora-name, .nora-purpose, .nora-invitation, .nora-presence, .is-home .nora-object { transition:none; } }
+.home-row { display:flex; align-items:flex-start; gap:10px; max-width:85%; animation:home-fade 300ms ease both; }
+.home-row .home-msg.agent { max-width:none; padding-top:3px; }
+.home-avatar { flex:none; width:30px; height:30px; }
+.is-home .nora-welcome.is-chatting .home-thread { margin-top:8px; }
+.home-thread .home-picker, .home-thread .home-chips { margin-left:40px; }
+/* Chat layout: the screen is a fixed frame. Messages start at the top and only move
+   up once new ones reach the message box, which stays anchored at the bottom. */
+.nora-greeting, .nora-name, .nora-purpose, .nora-invitation { transition:max-height 1000ms var(--ease), opacity 700ms ease, margin 1000ms var(--ease); }
+.nora-presence { transition:height 1000ms var(--ease), opacity 800ms ease, transform 750ms var(--ease); }
+.is-home .nora-welcome.is-chatting { display:flex; flex-direction:column; min-height:calc((100vh - 64px) / .82); padding-top:8px; box-sizing:border-box; }
+.is-home .nora-welcome.is-chatting .home-thread { flex:1; min-height:0; width:100%; }
+.is-home .nora-welcome.is-chatting .home-composer { width:100%; margin-top:auto; }
+.is-home .nora-welcome.is-chatting .nora-response:empty { display:none; }
+/* Home (design spec, Oct 2026): #F4F5F7 canvas, three quick-option cards, side tabs, composer. */
+.is-home { background:#f4f5f7; }
+.is-home .nora-signature { display:none; }
+.is-home .nora-greeting { font-family:'Accelerate Plex',sans-serif; font-size:38px; line-height:46px; letter-spacing:-1.3px; color:#161616; margin:20px 0 10px; }
+.is-home .nora-name { font-family:'Accelerate Plex',sans-serif; font-size:21px; line-height:29px; letter-spacing:-.4px; color:#161616; margin:0 0 28px; }
+.is-home .nora-purpose { font-family:'Accelerate Plex',sans-serif; font-size:15px; line-height:26px; color:#5e666b; opacity:.72; max-width:600px; }
+.is-home .nora-choices { grid-template-columns:repeat(3, 311px); gap:18px; max-width:970px; justify-content:center; margin-top:46px; }
+.is-home .nora-choice { min-height:194px; padding:25px 27px; background:linear-gradient(126.51deg,#fff 0%,#f2f2f2 100%); border:1px solid #dadada; border-radius:12px; box-shadow:0 8px 20px -20px rgba(39,69,92,.333); }
+.is-home .nora-choice:hover, .is-home .nora-choice.is-selected { border-color:#d64100; }
+.is-home .nora-card-top svg { width:26px; height:26px; color:#56717a; }
+.is-home .nora-card-title { font-family:'Accelerate Plex',sans-serif; font-size:21px; line-height:32px; letter-spacing:-.5px; color:#161616; margin-top:28px; }
+.is-home .nora-card-description { font-family:'Accelerate Plex',sans-serif; font-size:14px; line-height:23px; color:#161616; opacity:.72; }
+.is-home .home-composer .upload-composer { background:#fcfcfc; border:1px solid #dadada; border-radius:20px; padding:21px 16px 12px 20px; }
+.is-home .home-composer textarea { font-family:'Accelerate Plex',sans-serif; font-size:16px; line-height:25px; min-height:84px; }
+.is-home .home-composer textarea::placeholder { color:#5b5a5a; }
+.is-home .home-composer .upload-send:disabled { background:#dadada; color:#606060; }
+.home-disclaimer { margin:10px 0 0; text-align:center; font-family:'Accelerate Plex',sans-serif; font-size:12px; line-height:16px; color:#5b5a5a; }
+/* Side tabs on the right edge: vertical labels, the active one filled orange. */
+.home-side-tabs { position:fixed; right:0; top:108px; z-index:4; display:flex; flex-direction:column; gap:16px; }
+.home-side-tabs button { writing-mode:vertical-rl; padding:18px 8px; min-height:120px; background:#fff; border:1px solid #ff4e00; border-right:0; border-radius:12px 0 0 12px; font-family:'Accelerate Plex',sans-serif; font-size:16px; font-weight:500; line-height:21px; color:#161616; cursor:pointer; }
+.home-side-tabs button[aria-current] { background:#ff4e00; color:#fff; }
+.home-side-tabs button:not([aria-current]):hover { background:#fff8f4; }
+@media(max-width:1050px) { .is-home .nora-choices { grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); } }
+@media(max-width:760px) { .home-side-tabs { display:none; } }

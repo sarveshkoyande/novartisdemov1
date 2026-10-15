@@ -55,7 +55,7 @@ const RECORD_TOOL = {
   },
 };
 
-const REPLY_MATERIAL = 'Reply instructions: write a concise summary of two or three sentences in plain prose (no lists, no markdown, no field ids). First sentence: what the material covers, stated factually (for example the brand, indication, audience, number of emails and touchpoints). Second sentence: the most important required details that were not found, at most five, named in everyday words, followed by a short phrase such as and several other details when more are missing. Do not enumerate everything captured, do not say who will provide missing details, and do not add caveats or recommendations. Tone: professional, neutral and factual, as in a business status update to a pharmaceutical brand team. No praise or judgement of the material (never words like nice, nicely, great, solid, clear), no casual language or contractions, no dashes for asides, no exclamation marks.';
+const REPLY_MATERIAL = 'Reply instructions: this text follows the words "All set!" on screen, so do not repeat a greeting. Write three or four sentences in the first person as NORA, in plain prose (no lists, no markdown, no field ids). Say what you picked up from the material, naming the brand, indication and the main areas covered (for example audience, campaign details, number of emails, journey touchpoints, supporting team and delivery information). Then say, without listing them, that a few details were not in the material and that you have not made assumptions about them, and close by saying you can fill those in together during the review. Tone: professional, calm and helpful; no praise of the material, no exclamation marks, no filler.';
 const REPLY_CHAT = 'Reply instructions: you are mid-conversation. In one or two short sentences, confirm only the specific values you recorded from this message (for example the date or name given). Never summarise the whole campaign or repeat earlier recaps. If nothing could be recorded, state briefly why and what is needed. Do not open with filler such as Got it, Sure, Great or Noted. Tone: professional, neutral and factual, as in a business status update to a pharmaceutical brand team. No praise or judgement of the material (never words like nice, nicely, great, solid, clear), no casual language or contractions, no dashes for asides, no exclamation marks.';
 
 function systemPrompt(emailCount, replyGuide = REPLY_MATERIAL) {
@@ -176,6 +176,50 @@ function registerAi(app, { ai, model, extractFileText }) {
       res.json(await mapWithClaude(ai, model, String(text), Number(emailCount) || 0, `The user is working in the ${section || 'General'} section. Unqualified email/touchpoint details refer to the active object.`, REPLY_CHAT));
     } catch (err) {
       console.error('[studio] nora mapping failed:', err.message || err);
+      res.status(502).json({ error: String(err.message || err) });
+    }
+  });
+
+  // Home: what does the first message mean? Create, update or reuse a campaign, or
+  // just conversation. Also picks out campaigns the message refers to.
+  app.post('/api/studio/home-intent', async (req, res) => {
+    const { text, campaigns, recent } = req.body || {};
+    if (!text) return res.status(400).json({ error: 'text is required.' });
+    if (!ai) return res.status(503).json({ error: 'No model configured.' });
+    const list = (Array.isArray(campaigns) ? campaigns : []).slice(0, 60).map((c) => `${c.id} | ${c.name} | ${c.brand || ''}`).join('\n');
+    try {
+      const response = await ai.messages.create({
+        model,
+        max_tokens: 400,
+        system: `You are NORA, the agent on the home screen of Campaign Accelerator, a pharmaceutical campaign planning tool. Classify the user's message and reply.
+Intents:
+- create: they want to start a new campaign, or they are already giving campaign details (brand, audience, emails, dates…).
+- update: they want to change or continue an existing campaign.
+- reuse: they want to base a new campaign on an existing one (copy, clone, reuse, "like last time").
+- chat: greetings, questions about what you can do, anything else.
+For update/reuse, list the ids of campaigns from the catalogue the message plausibly refers to (empty if none is named).
+The reply is one or two short sentences, professional and neutral, no filler, no praise, no markdown. For chat, answer briefly and invite them to create, update or reuse a campaign. For update/reuse, say what you will do next (for example that they can pick the campaign below). For create with details, say you will prepare the campaign from what they shared.`,
+        tools: [{
+          name: 'route',
+          description: 'Record the intent and the reply.',
+          input_schema: {
+            type: 'object',
+            properties: {
+              intent: { type: 'string', enum: ['create', 'update', 'reuse', 'chat'] },
+              hasDetails: { type: 'boolean', description: 'True when the message itself contains campaign details worth extracting.' },
+              matches: { type: 'array', items: { type: 'string' }, description: 'Campaign ids from the catalogue the message refers to.' },
+              reply: { type: 'string' },
+            },
+            required: ['intent', 'hasDetails', 'matches', 'reply'],
+          },
+        }],
+        tool_choice: { type: 'tool', name: 'route' },
+        messages: [{ role: 'user', content: `${Array.isArray(recent) && recent.length ? `Conversation so far:\n${recent.slice(-6).join('\n')}\n\n` : ''}Campaign catalogue (id | name | brand):\n${list || '(none)'}\n\nMessage:\n${String(text).slice(0, 4000)}` }],
+      });
+      const out = response.content.find((b) => b.type === 'tool_use')?.input || {};
+      res.json({ intent: out.intent || 'chat', hasDetails: !!out.hasDetails, matches: Array.isArray(out.matches) ? out.matches : [], reply: String(out.reply || '') });
+    } catch (err) {
+      console.error('[studio] home intent failed:', err.message || err);
       res.status(502).json({ error: String(err.message || err) });
     }
   });

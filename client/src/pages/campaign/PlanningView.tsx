@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import AccelerateHeader from '../../components/AccelerateHeader';
 import AgentOrb from '../../components/AgentOrb';
 import Composer from '../../components/Composer';
+import EmailPicker from '../../components/EmailPicker';
+import { emailLibrary, ensureSegments, nextAsk, WAIT_OPTIONS, type Segment } from '../../studio/touchpointDemo';
 import Signature from '../../components/Signature';
 import { useCampaignStore } from '../../stores/useCampaignStore';
 import { api } from '../../api';
@@ -16,6 +18,20 @@ import {
 import { inputsFromCampaign, generateFlow, chatEditFlow, patchToInputs } from '../../studio/flowPlanner';
 import type { OrbState } from '../../components/agent-orb/agent-orb.js';
 
+const SECTION_NAMES: Record<string, string> = { General: 'General Information', Contact: 'Project Team', Email: 'Email Information', Touchpoint: 'Touchpoint Details' };
+
+// Shapes offered from a block's "+" on the Flow Canvas. Picking one drafts the
+// instruction for Flow Planner; nothing changes until it is sent.
+const SHAPES = [
+  { key: 'decision', label: 'Decision', icon: '<path d="M12 3 21 12 12 21 3 12Z"/>' },
+  { key: 'segment', label: 'Segment', icon: '<circle cx="9" cy="9" r="3"/><circle cx="16" cy="15" r="3"/><path d="M4 20c0-3 2.5-5 5-5M14 9h6"/>' },
+  { key: 'email', label: 'Email', icon: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>' },
+  { key: 'sms', label: 'SMS', icon: '<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10 18.5h4"/>' },
+  { key: 'wait', label: 'Wait', icon: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>' },
+  { key: 'database', label: 'Database', icon: '<ellipse cx="12" cy="5.5" rx="7.5" ry="2.5"/><path d="M4.5 5.5v13c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-13M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5"/>' },
+  { key: 'exit', label: 'Exit', icon: '<rect x="4" y="4" width="16" height="16" rx="8"/><path d="M9.5 9.5l5 5M14.5 9.5l-5 5"/>' },
+];
+
 function Btn({ onClick, children, ...rest }: { onClick: () => void; children: ReactNode; [k: string]: any }) {
   return <button type="button" onClick={onClick} {...rest}>{children}</button>;
 }
@@ -29,6 +45,19 @@ export default function PlanningView() {
   const busy = flow && flowBusy;
   const [notice, setNotice] = useState('');
   const [preview, setPreview] = useState<number | null>(null);
+  // The right-hand panel: Workspace (Campaign Memory) or Campaign Log; it can be closed.
+  const [panelOpen, setPanelOpen] = useState(true);
+  const [panelTab, setPanelTab] = useState<'workspace' | 'log'>('workspace');
+  const openPanel = (tab: 'workspace' | 'log') => { setPanelTab(tab); setPanelOpen(true); };
+  // Touchpoints are organised by segment: set the segments up the first time the section opens.
+  useEffect(() => {
+    if (s === 'Touchpoint' && !p.segments?.length) update(st => { ensureSegments(st); });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s]);
+  // Flow canvas hover tools: the block under the pointer and whether its shape palette is open.
+  const [blockTools, setBlockTools] = useState<{ code: string; left: number; top: number; open: boolean } | null>(null);
+  const toolsTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const hideToolsSoon = () => { clearTimeout(toolsTimer.current); toolsTimer.current = setTimeout(() => setBlockTools(null), 350); };
   const [historyOpen, setHistoryOpen] = useState(false);
   const [thinking, setThinking] = useState(false);
   const [orbState, setOrbState] = useState<OrbState>('idle');
@@ -346,7 +375,7 @@ export default function PlanningView() {
     const opts = choices(state, id);
     const upload = /File upload/.test(definitions[id].control);
     return (
-      <div key={id} className={`mem-card ${isRecent(id, section, index) ? 'recent' : ''} ${problem && v && !meta.waiting ? 'has-issue' : ''}`}>
+      <div key={id} className={`mem-card ${isRecent(id, section, index) ? 'recent' : ''} ${problem && v && !meta.waiting ? 'has-issue' : ''} ${v && !meta.waiting ? (/\byou\b|Selected|Entered|Confirmed|Kept/i.test(meta.source || '') ? 'src-you' : 'src-mapped') : 'src-none'}`}>
         <div className="mem-card-main">
           <span className="mem-label">{definitions[id].field}{meta.waiting && <em>{id === '19' ? ' | Waiting on OMS' : ' | Waiting / dependency'}</em>}{!isMine(id) && <b className="mem-field-owner">{ownerOf(id)}</b>}</span>
           {active ? (
@@ -427,17 +456,78 @@ export default function PlanningView() {
     );
   }
 
+  // Campaign Log: what has happened on this campaign, newest last, from NORA's notices,
+  // the material upload and the flow's audit trail.
+  function campaignLog() {
+    const when = (iso?: string) => (iso ? new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }).replace(',', ' ·') : 'Earlier');
+    const entries: { title: string; text: string; at?: string }[] = [];
+    if (state.material?.note) entries.push({ title: 'Campaign material processed', text: 'The uploaded material was read and its details were mapped into the campaign setup.', at: state.material.processedAt });
+    for (const sec of ['General', 'Contact', 'Email', 'Touchpoint']) {
+      for (const m of (p.messages[sec] || []) as any[]) {
+        if (!m.event || m.event === 'question') continue;
+        const text = (m.lines || [m.text]).join(' ');
+        const title = m.event === 'oms' ? (/issued/i.test(text) ? 'Campaign Code received from OMS' : 'Notification sent to OMS') : m.event === 'aor' ? 'Brief passed to AoR' : 'Update';
+        entries.push({ title, text, at: m.at });
+      }
+    }
+    if (p.validation === 'validated') entries.push({ title: 'Campaign prerequisites completed', text: 'General campaign information has been gathered and reviewed. Required prerequisites are marked complete.' });
+    for (const a of (p.flow.audit || []) as any[]) entries.push({ title: `Flow Planner · ${a.action}`, text: `${a.by} · version ${a.revision}`, at: a.at });
+    return (
+      <div className="campaign-log">
+        <div className="memory-heading"><h2>Campaign Log</h2></div>
+        <p className="memory-description">Everything that has happened on this campaign so far.</p>
+        {!entries.length && <p className="mem-empty">Nothing has happened on this campaign yet.</p>}
+        <ol>
+          {entries.map((e, n) => (
+            <li key={n}><h3>{e.title}</h3><p><time>{when(e.at)}</time>{e.text}</p></li>
+          ))}
+        </ol>
+      </div>
+    );
+  }
+
+  // First message in a section: what NORA took from the material, with the key values.
+  function intro() {
+    if (s === 'Touchpoint' || history.length || !state.material?.note || !target(state)) return null;
+    const i = p.active;
+    const found = [...new Set(groups[s].flatMap(g => g[2] as string[]))]
+      .filter(id => applicable(state, id, s, i) && value(state, id, s, i) && !/\byou\b/i.test(target(state, s, i)?.meta[id]?.source || ''))
+      .slice(0, 4);
+    if (!found.length) return null;
+    const brand = state.fields['14'];
+    return (
+      <div className="story-intro">
+        <p>I’ve gone through your material{brand ? ` for the ${brand} campaign` : ''} and brought the details I found into the {SECTION_NAMES[s]} setup, so you won’t need to enter them again. Let’s review the information together.</p>
+        {found.length > 0 && (
+          <dl className="intro-table">
+            {found.map(id => <div key={id}><dt>{definitions[id].field}</dt><dd>{value(state, id, s, i)}</dd></div>)}
+          </dl>
+        )}
+      </div>
+    );
+  }
+
   function memory() {
     const i = p.active, t = target(state);
     const generalDone = s === 'General' && p.validation === 'validated';
     const pill = 'Complete · Ready for Flow Planner';
     return (
-      <aside className="campaign-memory" aria-label="Campaign Canvas">
-        <div className="memory-heading"><h2>Campaign Canvas</h2>
-          <div className="memory-modes" role="group" aria-label="Memory view">{['LIVE', 'REVIEW ALL'].map(mode => <Btn key={mode} aria-pressed={p.mode === mode} onClick={() => update((_, pl) => { pl.mode = mode; })}>{mode}</Btn>)}</div>
+      <aside className={`campaign-memory panel-${panelTab}`} aria-label={panelTab === 'log' ? 'Campaign Log' : 'Campaign Memory'}>
+        <nav className="panel-tabs" aria-label="Campaign panels">
+          <button type="button" aria-current={panelTab === 'workspace' ? 'page' : undefined} onClick={() => setPanelTab('workspace')}>Workspace</button>
+          <button type="button" aria-current={panelTab === 'log' ? 'page' : undefined} onClick={() => setPanelTab('log')}>Campaign Log</button>
+        </nav>
+        <button type="button" className="panel-close" aria-label="Close panel" onClick={() => setPanelOpen(false)}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke="#686868" strokeWidth="1.8" strokeLinecap="round" /></svg>
+        </button>
+        {panelTab === 'log' ? campaignLog() : <>
+        <div className="memory-heading"><h2>Campaign Memory</h2></div>
+        <p className="memory-description">Review the workspace information NORA has structured so far.</p>
+        <div className="memory-sections" role="tablist" aria-label="Campaign sections">
+          {(['General', 'Contact', 'Email', 'Touchpoint'] as const).map(x => <button key={x} type="button" role="tab" aria-selected={s === x} onClick={() => navigateSection(x)}>{x}</button>)}
         </div>
-        <p className="memory-description">{p.mode === 'LIVE' ? 'Only what still needs you: fields you own that are empty or not yet confirmed.' : 'The complete field list for this section, including what others own.'}</p>
-        {p.mode === 'LIVE' && t && (() => {
+        {s !== 'Touchpoint' && <div className="memory-modes" role="group" aria-label="Memory view">{['LIVE', 'REVIEW ALL'].map(mode => <Btn key={mode} aria-pressed={p.mode === mode} onClick={() => update((_, pl) => { pl.mode = mode; })}>{mode}</Btn>)}</div>}
+        {p.mode === 'LIVE' && t && s !== 'Touchpoint' && (() => {
           const c = tally(s, i);
           return (
             <div className="mem-tally" aria-label="Section progress">
@@ -458,7 +548,7 @@ export default function PlanningView() {
             </ul>
           </div>
         )}
-        {['Email', 'Touchpoint'].includes(s) && (
+        {s === 'Email' && (
           <>
             {/* Emails / touchpoints as a horizontal carousel of tiles, five per pane. */}
             <div className="object-list" aria-label={`${s} objects`}>
@@ -484,10 +574,12 @@ export default function PlanningView() {
             {t && s === 'Touchpoint' && <p className="linked-email">Linked to: <Btn onClick={() => navigateSection('Email')}>{label('Email', i)} →</Btn></p>}
           </>
         )}
-        {t && (() => {
+        {s === 'Touchpoint' ? touchpointCanvas() : t && (() => {
           const rendered = groups[s].map(g => memGroup(g, s, i, generalDone && p.mode === 'LIVE')).filter(Boolean);
           return rendered.length ? rendered : p.mode === 'LIVE' && <p className="mem-empty">Nothing here needs you right now. Switch to REVIEW ALL to see every detail.</p>;
         })()}
+        <div className="memory-legend" aria-label="Legend"><span className="src-you"><i aria-hidden="true" />Provided by you</span><span className="src-mapped"><i aria-hidden="true" />Mapped from source</span></div>
+        </>}
       </aside>
     );
   }
@@ -496,7 +588,100 @@ export default function PlanningView() {
   // What NORA still needs, in the design's voice: an intro on first visit,
   // "I'm still looking for:" afterwards, and a completion hand-off with
   // "Continue with:" pills once the section is done.
+  // --- Touchpoints: per segment, ask how many touchpoints, then for each one the email
+  // it sends (picked from the email library), the wait time and whether to resend.
+  const segments: Segment[] = p.segments || [];
+  const library = emailLibrary(p.emails || []);
+  const emailName = (key: string | null) => library.find(e => e.key === key)?.name || '—';
+
+  function answerTouchpoint(question: string, shown: string, apply: (sg: Segment[]) => void) {
+    update((_, pl) => {
+      apply(pl.segments);
+      pl.messages.Touchpoint.push({ role: 'agent', text: question, lines: [question], event: 'question' });
+      pl.messages.Touchpoint.push({ role: 'user', text: shown });
+      pl.version++;
+    });
+  }
+
+  function touchpointStory() {
+    if (!segments.length) return <div className="story-ask"><p className="story-note">Preparing the segments…</p></div>;
+    const ask = nextAsk(segments);
+    if (!ask) {
+      const total = segments.reduce((n, sg) => n + sg.touchpoints.length, 0);
+      return (
+        <div className="story-ask">
+          <p className="story-lead">All {total} touchpoint{total === 1 ? '' : 's'} across {segments.length} segments are set up.</p>
+          <p className="story-note">You can change any email, wait time or resend choice on the Campaign Memory panel.</p>
+          <div className="story-pills">
+            <Btn onClick={() => update((_, pl) => { pl.view = 'flow'; })}>Open Flow Planner</Btn>
+            <Btn onClick={toWorkspace}>Campaign workspace</Btn>
+          </div>
+        </div>
+      );
+    }
+    const sg = segments[ask.seg];
+    const tpLabel = ask.kind === 'count' ? '' : `touchpoint ${ask.tp + 1} of the ${sg.name} segment`;
+    const question = ask.kind === 'count'
+      ? `How many touchpoints should the ${sg.name} segment have?`
+      : ask.kind === 'email' ? `Which email should ${tpLabel} send?`
+      : ask.kind === 'wait' ? `How long should we wait after ${tpLabel} before the next send?`
+      : `Should ${tpLabel} be resent to people who didn’t open it?`;
+    const intro = ask.kind === 'count' && ask.seg === 0 && !history.length
+      ? <p className="story-intro-line">This campaign has {segments.length} segments: {segments.map(x => x.name).join(' and ')}. Let’s set up the touchpoints for each one.</p>
+      : null;
+    return (
+      <div className="story-ask">
+        {intro}
+        <div className="story-question">
+          <p className="story-lead">{question}</p>
+          {ask.kind === 'count' && (
+            <div className="story-chips">{[1, 2, 3, 4].map(n => <button key={n} type="button" onClick={() => answerTouchpoint(question, `${n} touchpoint${n === 1 ? '' : 's'}`, list => { list[ask.seg].count = n; list[ask.seg].touchpoints = Array.from({ length: n }, () => ({ email: null, wait: '', resend: '' })); })}>{n}</button>)}</div>
+          )}
+          {ask.kind === 'email' && (
+            <EmailPicker emails={library} onPick={key => answerTouchpoint(question, emailName(key), list => { list[ask.seg].touchpoints[ask.tp].email = key; })} />
+          )}
+          {ask.kind === 'wait' && (
+            <div className="story-chips">
+              {WAIT_OPTIONS.map(w => <button key={w} type="button" onClick={() => answerTouchpoint(question, w, list => { list[ask.seg].touchpoints[ask.tp].wait = w; })}>{w}</button>)}
+              {ask.tp === sg.touchpoints.length - 1 && <button type="button" onClick={() => answerTouchpoint(question, 'No wait (last touchpoint)', list => { list[ask.seg].touchpoints[ask.tp].wait = 'None (last)'; })}>No wait (last touchpoint)</button>}
+            </div>
+          )}
+          {ask.kind === 'resend' && (
+            <div className="story-chips">{['Yes', 'No'].map(v => <button key={v} type="button" onClick={() => answerTouchpoint(question, v, list => { list[ask.seg].touchpoints[ask.tp].resend = v; })}>{v}</button>)}</div>
+          )}
+          {library[0]?.key.startsWith('demo') && ask.kind === 'email' && <p className="story-hint">Showing the Cosentyx sample emails, because no emails with subject lines have been captured yet.</p>}
+        </div>
+      </div>
+    );
+  }
+
+  function touchpointCanvas() {
+    if (!segments.length) return null;
+    const setTp = (seg: number, tp: number, patch: object) => update((_, pl) => { Object.assign(pl.segments[seg].touchpoints[tp], patch); pl.version++; });
+    return (
+      <>
+        {segments.map((sg, seg) => (
+          <section key={sg.name} className="mem-group tp-segment">
+            <header><h3>{sg.name}</h3><span className="tp-count">{sg.count == null ? 'Touchpoints not set' : `${sg.count} touchpoint${sg.count === 1 ? '' : 's'}`}</span></header>
+            <div className="mem-cards">
+              {sg.touchpoints.map((t, tp) => (
+                <div key={tp} className={`mem-card tp-row ${t.email ? 'src-you' : 'src-none'}`}>
+                  <span className="mem-label">Touchpoint {tp + 1}</span>
+                  <div className="tp-detail">
+                    <EmailPicker emails={library} value={t.email} label="Choose email" onPick={key => setTp(seg, tp, { email: key })} />
+                    <small>{t.wait ? `Wait ${t.wait}` : 'Wait time not set'} · {t.resend ? `Resend: ${t.resend}` : 'Resend not set'}</small>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </>
+    );
+  }
+
   function story() {
+    if (s === 'Touchpoint') return touchpointStory();
     const i = p.active;
     const inheritedIds = s === 'Touchpoint' ? ['45', '46', '47'] : [];
     const unresolvedAll = target(state) ? unresolved(state, s, i) : [];
@@ -684,9 +869,12 @@ export default function PlanningView() {
   const agentMessage = (m: any, key: number) => {
     const lines: string[] = m.lines || [m.text];
     return (
-      <div key={key} className="story-reply">
-        <p className="story-lead">{lines[0]}</p>
-        {lines.slice(1).map((l, n) => <p key={n}>{l}</p>)}
+      <div key={key} className="agent-row">
+        <AgentOrb className="agent-avatar" size={35} quality="low" />
+        <div className="story-reply">
+          <p className="story-lead">{lines[0]}</p>
+          {lines.slice(1).map((l, n) => <p key={n}>{l}</p>)}
+        </div>
       </div>
     );
   };
@@ -732,7 +920,19 @@ export default function PlanningView() {
         {stale && <p className="flow-update">Campaign details have changed. The current flow is unchanged until you ask Flow Planner to update it.</p>}
         <div ref={viewport} className={`canvas-viewport ${f.pan ? 'panning' : ''}`} tabIndex={0} aria-label="Scrollable flow diagram"
           onPointerDown={e => { if (!f.pan) return; const v = viewport.current!; drag.current = { x: e.clientX, y: e.clientY, left: v.scrollLeft, top: v.scrollTop }; v.setPointerCapture(e.pointerId); }}
-          onPointerMove={e => { const d = drag.current, v = viewport.current; if (d && v) { v.scrollLeft = d.left - e.clientX + d.x; v.scrollTop = d.top - e.clientY + d.y; } }}
+          onPointerMove={e => {
+            const d = drag.current, v = viewport.current;
+            if (d && v) { v.scrollLeft = d.left - e.clientX + d.x; v.scrollTop = d.top - e.clientY + d.y; return; }
+            // Hovering a block shows a "+" on its right edge; the shape palette opens from it.
+            if (!v || f.pan || viewing || busy || (e.target as Element).closest('.fp-tools')) return;
+            const g = (e.target as Element).closest('g.fp-node') as SVGGElement | null;
+            const code = g?.getAttribute('data-code');
+            if (!g || !code) { if (!blockTools?.open) hideToolsSoon(); return; }
+            const r = g.getBoundingClientRect(), vr = v.getBoundingClientRect();
+            clearTimeout(toolsTimer.current);
+            if (blockTools?.code !== code) setBlockTools({ code, left: r.right - vr.left + v.scrollLeft, top: r.top - vr.top + v.scrollTop + r.height / 2, open: false });
+          }}
+          onPointerLeave={() => hideToolsSoon()}
           onPointerUp={() => { drag.current = null; }}>
           <div className="canvas-content" style={{ zoom: f.zoom }}>
             {busy && !f.svg ? (
@@ -745,6 +945,25 @@ export default function PlanningView() {
               <div className="flow-svg" style={{ opacity: busy ? 0.45 : 1, transition: 'opacity 200ms' }} dangerouslySetInnerHTML={{ __html: viewing ? viewing.svg : f.svg }} />
             )}
           </div>
+          {blockTools && !viewing && !busy && (
+            <div className="fp-tools" style={{ left: blockTools.left, top: blockTools.top }}
+              onPointerEnter={() => clearTimeout(toolsTimer.current)} onPointerLeave={() => hideToolsSoon()}>
+              <button type="button" className="fp-add" aria-label={`Add a block after ${blockTools.code}`} aria-expanded={blockTools.open}
+                onPointerEnter={() => setBlockTools(t => t && { ...t, open: true })} onClick={() => setBlockTools(t => t && { ...t, open: !t.open })}>+</button>
+              {blockTools.open && (
+                <div className="fp-palette" role="menu" aria-label={`Add after ${blockTools.code}`}>
+                  <span className="fp-palette-title">Add after {blockTools.code}</span>
+                  {SHAPES.map(sh => (
+                    <button key={sh.key} type="button" role="menuitem" title={sh.label}
+                      onClick={() => { setDraft(`Add a ${sh.label.toLowerCase()} block after ${blockTools.code} `); focusComposer(); setBlockTools(null); }}>
+                      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" dangerouslySetInnerHTML={{ __html: sh.icon }} />
+                      <span>{sh.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <footer><span>Generated by the Campaign Accelerator segmentation engine · block codes (B1, B2 …) stay stable across edits.</span><span>{busy ? 'Working…' : viewing ? `Previewing v${viewing.revision} · read only` : 'Awaiting instruction'}</span></footer>
       </aside>
@@ -766,16 +985,16 @@ export default function PlanningView() {
       <AccelerateHeader onNotice={setNotice} />
       <div className="planning-context">
         <Btn onClick={toWorkspace}>← Campaign workspace</Btn>
-        <span className="context-divider" /><span>{state.fields['14'] || 'New Campaign'} · {({ 'New Brand Launch': 'New Brand', 'New Indication Launch': 'New Indication' } as Record<string, string>)[state.fields['12']] || 'Existing Brand'}</span><span>/</span><strong>{flow ? 'Flow Planner' : s}</strong>
+        <span className="context-divider" /><span>{state.fields['14'] || 'New Campaign'} · {({ 'New Brand Launch': 'New Brand', 'New Indication Launch': 'New Indication' } as Record<string, string>)[state.fields['12']] || 'Existing Brand'}</span><span>/</span><strong>{flow ? 'Flow Planner' : SECTION_NAMES[s]}</strong>
         <div className="planning-context-end">
           {flow ? <small>Built from the details captured so far</small> : dirty ? <small className="save-state dirty"><i aria-hidden="true" />Unsaved changes</small> : <small className="save-state">{saving === 'saving' ? 'Saving…' : saving === 'error' ? 'Not saved — check the server' : 'All changes saved'}</small>}
           {flow && <Btn onClick={() => update((_, pl) => { pl.section = 'General'; pl.mode = 'REVIEW ALL'; pl.view = 'memory'; })}>Campaign details</Btn>}
           {!flow && <Btn className="save-section" onClick={saveSection}>Save {s} Details</Btn>}
         </div>
       </div>
-      <main id="main" className={`planning-shell ${flow ? 'flow-shell' : ''} ${p.mode === 'REVIEW ALL' && !flow ? 'audit-shell' : ''}`}>
+      <main id="main" className={`planning-shell ${flow ? 'flow-shell' : ''} ${p.mode === 'REVIEW ALL' && !flow ? 'audit-shell' : ''} ${!flow && !panelOpen ? 'panel-closed' : ''}`}>
         <section className="planning-conversation" aria-label={`${flow ? 'Flow Planner' : 'NORA'} conversation`}>
-          <div className="planning-identity">
+          <div className={`planning-identity${flow ? '' : ' sr-only'}`}>
             <AgentOrb size={54} state={orbState} quality={flow ? 'low' : 'high'} />
             <div><Signature agent={flow ? 'Flow Planner Agent' : 'Requirement Collection Agent'} /><h1 ref={heading} tabIndex={-1} className={flow ? 'sr-only' : undefined}>{headingText}</h1></div>
           </div>
@@ -809,19 +1028,25 @@ export default function PlanningView() {
                     : <Btn className={approvalSent ? 'done' : 'plan-primary'} disabled={busy || approvalSent} onClick={sendForApproval}>{approvalSent ? 'Sent for approval ✓' : approval ? 'Send updated flow for approval' : 'Send for approval'}</Btn>}
                 </>}
               </div>
-            ) : story()}
+            ) : <div className="agent-row"><AgentOrb className="agent-avatar" size={35} quality="low" state={orbState} /><div className="agent-body">{intro()}{story()}</div></div>}
           </div>
           <div className="planning-compose" ref={notes}>
-            <small>● Working on: <strong>{flow ? 'Flow Planner' : s + (p.emails.length && ['Email', 'Touchpoint'].includes(s) ? ` · ${label(s, p.active)}` : '')}</strong></small>
+            <small className="working-with"><i aria-hidden="true" />Working with {flow ? 'Flow Planner' : SECTION_NAMES[s] + (p.emails.length && ['Email', 'Touchpoint'].includes(s) ? ` · ${label(s, p.active)}` : '')}</small>
             <Composer value={draft} onChange={setDraft} onSend={() => submit()} disabled={busy || thinking} onAttach={() => attach.current?.click()}
-              placeholder={flow ? 'Tell Flow Planner what you want to create or change…' : undefined} />
+              placeholder={flow ? 'Tell Flow Planner what you want to create or change…' : 'Tell me what you’re working on, or share whatever you have so far…'} onMic={() => setNotice('Voice input is outside this demo.')} />
             <input ref={attach} type="file" className="sr-only" multiple tabIndex={-1} aria-label="Add supporting material"
               onChange={e => { const files = [...(e.target.files || [])]; e.target.value = ''; if (files.length) { update(st => { st.material.files = files; st.material.notes = ''; st.material.processing = { startedAt: Date.now(), complete: false }; }); setStage('processing'); } }} />
-            <p className="upload-caption">{flow ? 'Flow Planner acts only on your instruction.' : 'NORA will organise what you share into Campaign Canvas.'}</p>
+            <p className="home-disclaimer">{flow ? 'Flow Planner acts only on your instruction.' : 'NORA is AI-powered and may make mistakes. Please review and validate outputs before finalizing.'}</p>
             <div className="planning-notice" role="status">{notice}</div>
           </div>
         </section>
-        {flow ? flowCanvas() : memory()}
+        {flow ? flowCanvas() : panelOpen ? memory() : null}
+        {!flow && !panelOpen && (
+          <nav className="home-side-tabs" aria-label="Campaign panels">
+            <button type="button" onClick={() => openPanel('workspace')}>Workspace</button>
+            <button type="button" onClick={() => openPanel('log')}>Campaign Log</button>
+          </nav>
+        )}
       </main>
     </>
   );

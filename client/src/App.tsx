@@ -18,7 +18,8 @@ export default function App() {
         <Route path="new" element={<Navigate to="/" replace />} />
         <Route path="new/brand" element={<DiscoveryPage />} />
         <Route path="campaigns/:id" element={<CampaignPage />} />
-        <Route path="schedule" element={<PlaceholderPage title="Schedule" />} />
+        <Route path="calendar" element={<PlaceholderPage title="Calendar" />} />
+        <Route path="schedule" element={<Navigate to="/calendar" replace />} />
         <Route path="admin" element={<PlaceholderPage title="Admin" />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

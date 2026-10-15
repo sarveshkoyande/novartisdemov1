@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 import AccelerateHeader from '../../components/AccelerateHeader';
 import AgentOrb from '../../components/AgentOrb';
-import Signature from '../../components/Signature';
+import Composer from '../../components/Composer';
 import { useCampaignStore } from '../../stores/useCampaignStore';
 import { api } from '../../api';
 import { applyMapped, mapLocally } from '../../studio/mapping';
@@ -9,10 +10,10 @@ import { definitions, planning, unresolved } from '../../studio/planningModel';
 import { isMineFor, otherOwnerLabel } from '../../studio/ownership';
 
 const stages = [
-  { label: 'Uploading', title: 'Gathering your material', description: 'Bringing your selected documents and notes together for review.' },
-  { label: 'Reviewing', title: 'Reviewing the material', description: 'NORA is identifying campaign information that can be used in the planning workspace.' },
-  { label: 'Mapping', title: 'Connecting the campaign context', description: 'Organising the available information around the campaign details it relates to.' },
-  { label: 'Preparing', title: 'Preparing for your review', description: 'Bringing the context together and highlighting what still needs your input.' },
+  { label: 'Uploading', title: 'Getting everything together…', description: 'Let me gather your documents and campaign details so we have everything in one place.' },
+  { label: 'Reviewing', title: 'Getting familiar with your campaign…', description: 'I’m going through what you’ve shared to understand the campaign and what you’re looking to achieve.' },
+  { label: 'Mapping', title: 'Putting the pieces together…', description: 'I’ve found the key details. Now I’m organizing them into your campaign plan.' },
+  { label: 'Preparing', title: 'Just a few finishing touches…', description: 'I’m getting everything ready for you to review. Almost there!' },
 ];
 const stageDuration = 1800;
 
@@ -48,6 +49,8 @@ export default function ProcessingView() {
   const [note, setNote] = useState<string | null>(state.material.note ?? null);
   const [facts, setFacts] = useState<string[]>(state.material.facts ?? []);
   const [settled, setSettled] = useState(false);
+  const [followUp, setFollowUp] = useState('');
+  const navigate = useNavigate();
   const heading = useRef<HTMLHeadingElement>(null);
   const abort = useRef<AbortController | null>(null);
 
@@ -68,7 +71,7 @@ export default function ProcessingView() {
       }
       if (res.failed.length) extra.push(`Could not read: ${res.failed.map(f => f.name).join(', ')}.`);
       const text = res.ai && res.reply ? clean(res.reply) : compose(useCampaignStore.getState().state, count);
-      mutate(s => { s.material.note = text; s.material.facts = extra; s.material.summary = text.split('\n\n')[0]; });
+      mutate(s => { s.material.note = text; s.material.facts = extra; s.material.summary = text.split('\n\n')[0]; s.material.processedAt = new Date().toISOString(); });
       setNote(text);
       setFacts(extra);
     }).catch(err => {
@@ -94,10 +97,6 @@ export default function ProcessingView() {
   }, [reached]);
   const complete = reached && settled;
   const shown = Math.min(current, stages.length - 1);
-  // Checkpoints sit at the centre of each stage's column; the head glides most of the
-  // way to the next one while that stage runs, and holds there until the stage completes.
-  const checkpoint = (i: number) => (i < 0 ? 0 : (i + 0.5) * (100 / stages.length));
-  const position = reached ? 100 : checkpoint(current - 1) + 0.8 * (checkpoint(current) - checkpoint(current - 1));
 
   function cancel() {
     if (complete) {
@@ -110,50 +109,53 @@ export default function ProcessingView() {
     setStage('upload');
   }
 
+  const paragraphs = (note || '').split(/\n{2,}/)
+    // Drop caveat sentences only, never a whole paragraph.
+    .map(para => (para.match(/[^.!?]+[.!?]+["”’)]*\s*|[^.!?]+$/g) || [para]).filter(sn => !/worth flagging|source conflict|may need confirming/i.test(sn)).join('').trim())
+    .filter(Boolean);
+
+  function uploadNew() {
+    mutate(s => { s.material.processing = null; s.material.reviewOpen = false; s.material.submitted = false; });
+    setStage('upload');
+  }
+
   return (
     <>
       <AccelerateHeader />
       <main id="main" className="upload-main">
-        <section className="upload-experience upload-processing" aria-labelledby="processing-heading" data-stage={complete ? 'complete' : stages[shown].label.toLowerCase()}>
-          <AgentOrb id="upload-orb" size={185.64} state={complete ? 'idle' : 'thinking'} />
-          <Signature />
-          <div className="processing-copy" role="status" aria-live="polite" aria-atomic="true">
+        {/* NORA reports progress as a chat message: one line per stage, then her summary. */}
+        <section className="upload-experience processing-chat" aria-labelledby="processing-heading" data-stage={complete ? 'complete' : stages[shown].label.toLowerCase()}>
+          <div className="processing-message" role="status" aria-live="polite" aria-atomic="true">
+            <AgentOrb className="processing-avatar" size={36} quality="low" state={complete ? 'idle' : 'thinking'} />
             <div key={complete ? 'done' : shown} className="processing-fade">
-              <h1 id="processing-heading" ref={heading} tabIndex={-1}>{complete ? 'Material preparation complete' : stages[shown].title}</h1>
-              <p className="processing-description">{complete ? 'Here’s what NORA found.' : stages[shown].description}</p>
+              {complete ? <>
+                <h1 id="processing-heading" ref={heading} tabIndex={-1}>All set!</h1>
+                {paragraphs.map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+                {facts.length > 0 && <ul className="summary-facts">{facts.map(f => <li key={f}>{f}</li>)}</ul>}
+              </> : <>
+                <h1 id="processing-heading" ref={heading} tabIndex={-1}>{stages[shown].title}</h1>
+                <p>{stages[shown].description}</p>
+              </>}
+              <div className="processing-actions">
+                {complete ? <>
+                  <button type="button" className="processing-secondary" onClick={uploadNew}>Upload New Document</button>
+                  <button type="button" className="processing-primary" onClick={cancel}>Continue to Workspace</button>
+                </> : <button type="button" className="processing-primary" onClick={cancel}>Cancel Process</button>}
+              </div>
             </div>
           </div>
-
-          {!complete ? (
-            <div className={`processing-progress ${reached ? 'is-done' : ''}`} aria-label="Material preparation progress">
-              <div className="proc-rail" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(position)}>
-                <div className="proc-fill" style={{ width: `${position}%` }}><b className="proc-streak" /></div>
-                <span className="proc-head" style={{ left: `${position}%` }} />
-                {stages.map((stage, i) => (
-                  <span key={stage.label} className={`proc-check ${i < current ? 'is-reached' : ''}`} style={{ left: `${checkpoint(i)}%` }} />
-                ))}
-              </div>
-              <ol className="proc-stages">
-                {stages.map((stage, index) => (
-                  <li key={stage.label} className={index < current ? 'is-complete' : index === current ? 'is-active' : ''} aria-current={index === current ? 'step' : undefined}>
-                    {stage.label}<span className="sr-only">{index < current ? ' (complete)' : index === current ? ' (in progress)' : ' (pending)'}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          ) : (
-            <article className="processing-summary" aria-label="What NORA found">
-              {(note || '').split(/\n{2,}/)
-                // Drop caveat sentences only, never a whole paragraph.
-                .map(para => (para.match(/[^.!?]+[.!?]+["”’)]*\s*|[^.!?]+$/g) || [para]).filter(sn => !/worth flagging|source conflict|may need confirming/i.test(sn)).join('').trim())
-                .filter(Boolean).map((paragraph, i) => <p key={i}>{paragraph}</p>)}
-              {facts.length > 0 && <ul className="summary-facts">{facts.map(f => <li key={f}>{f}</li>)}</ul>}
-            </article>
-          )}
-
-          <button type="button" className={`processing-cancel ${complete ? 'is-primary' : ''}`} onClick={cancel}>{complete ? 'Continue to review' : 'Cancel Upload'}</button>
-          <p className="processing-demo">Files are parsed on the server and discarded; only the mapped campaign details are saved.</p>
+          <div className={`processing-composer ${complete ? '' : 'is-waiting'}`}>
+            <Composer value={followUp} onChange={setFollowUp} disabled={!complete} placeholder="Tell me what you’re working on, or share whatever you have so far…"
+              onSend={() => { mutate(s => { s.material.reviewNotes = followUp; }); setFollowUp(''); cancel(); }} onAttach={complete ? uploadNew : undefined} onMic={() => {}} />
+            <p className="home-disclaimer">NORA is AI-powered and may make mistakes. Please review and validate outputs before finalizing.</p>
+          </div>
         </section>
+        {complete && (
+          <nav className="home-side-tabs" aria-label="Workspace views">
+            <button type="button" onClick={cancel}>Workspace</button>
+            <button type="button" onClick={() => navigate('/campaigns')}>Campaign Log</button>
+          </nav>
+        )}
       </main>
     </>
   );

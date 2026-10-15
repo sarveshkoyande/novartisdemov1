@@ -114,3 +114,20 @@
 .accelerate-profile .role-text strong, .accelerate-profile .role-text span { display:block; }
 .role-swap { color:#7a7a7a; font-size:13px; }
 .role-switch:hover .role-swap { color:#d64100; }
+/* Header (design spec): #FCFCFC bar, centred navigation, help + notification icons, profile. */
+.accelerate-header { position:relative; background:#fcfcfc; border-bottom:1px solid #dadada; }
+.accelerate-brand { gap:7px; width:auto; }
+.accelerate-brand i { display:block; width:1px; height:20px; background:#dadada; margin:0 2px; }
+.accelerate-brand strong { border-left:0; padding-left:0; font-size:13.1px; line-height:19px; font-weight:700; color:#161616; }
+.accelerate-header nav { position:absolute; left:50%; transform:translateX(-50%); gap:32px; }
+.accelerate-header nav button { height:63px; padding:0 2px; font-size:13.5px; line-height:18px; color:#131926; font-weight:400; border-bottom:2px solid transparent; }
+.accelerate-header nav button[aria-current] { color:#131926; font-weight:700; border-bottom:2px solid #ff4e00; }
+.accelerate-tools { margin-left:auto; display:flex; align-items:center; gap:14px; padding-right:16px; margin-right:20px; border-right:1px solid #dadada; height:20px; }
+.accelerate-header .header-icon { display:grid; place-items:center; width:24px; height:24px; border:1px solid #131926; border-radius:9999px; color:#131926; cursor:pointer; }
+.accelerate-header .header-icon svg { width:14px; height:14px; }
+.accelerate-header .header-icon:hover { border-color:#d64100; color:#d64100; }
+.accelerate-profile { margin-left:0; }
+.accelerate-avatar { background:#e9eef5; color:#0b4f9c; font-size:11.7px; }
+.accelerate-profile .role-text strong { font-size:12.5px; line-height:16px; color:#131926; }
+.accelerate-profile .role-text span { font-size:11.6px; line-height:14px; color:#6b7280; }
+@media(max-width:760px) { .accelerate-header nav { position:static; transform:none; } .accelerate-tools { display:none; } }

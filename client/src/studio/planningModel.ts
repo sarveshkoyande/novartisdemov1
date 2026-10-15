@@ -114,6 +114,19 @@ function reconcileMaster(state) {
  const p=state.planning,brand=state.fields['14'];
  if(!p||!brand)return;
  const known=brands.filter(b=>b.name===brand);
+ // Request Type is derived, not asked: unknown brand → New Brand Launch; known brand with
+ // an indication the master doesn't list → New Indication Launch; otherwise an existing brand.
+ if(!state.fields['12']&&brands.length){
+  // Indications are worded loosely ("HR+ breast cancer" vs "HR+/HER2− early breast cancer"):
+  // they match when every word of the shorter one appears in the longer one.
+  const words=s=>new Set(String(s||'').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean));
+  const sameIndication=(a,b)=>{const x=words(a),y=words(b);const [s,l]=x.size<=y.size?[x,y]:[y,x];return s.size>0&&[...s].every(w=>l.has(w));};
+  const ind=state.fields['15']||'';
+  const isKnown=brands.some(b=>b.name.toLowerCase()===String(brand).trim().toLowerCase());
+  const type=!isKnown?'New Brand Launch':ind&&!known.some(b=>sameIndication(b.indication,ind))?'New Indication Launch':'Update Existing Campaign';
+  state.fields['12']=type; state.fields['13']=type==='New Brand Launch'?'Yes':'No';
+  p.meta['12']={source:'Derived from the brand master'}; p.meta['13']={source:'Derived from Request Type'};
+ }
  for(const [id,key] of [['15','indication'],['16','therapeuticArea']]) {
   const v=String(state.fields[id]||'').trim().toLowerCase();
   if(!v||!p.meta[id]?.unconfirmed||!known.length)continue;
@@ -140,7 +153,7 @@ export function requestCampaignCode(state) {
  if(!OMS_PREREQUISITES.every(id=>!applicable(state,id,'General',0)||!issue(state,id,'General',0)))return false;
  p.oms={status:'requested',requestedAt:new Date().toISOString()};
  p.meta['19']={source:'Requested from OMS',waiting:true};
- p.messages.General.push({role:'agent',text:'',lines:['I’ve asked OMS to issue the Campaign Code.','That one is theirs to provide, so there’s nothing you need to do. I’ll drop it in here the moment it arrives.'],event:'oms'});
+ p.messages.General.push({role:'agent',text:'',at:new Date().toISOString(),lines:['I’ve asked OMS to issue the Campaign Code.','That one is theirs to provide, so there’s nothing you need to do. I’ll drop it in here the moment it arrives.'],event:'oms'});
  return true;
 }
 // The AoR owns the campaign brief. Once nothing in General is left for the
@@ -152,7 +165,7 @@ export function notifyAoR(state) {
  const open=unresolved(state,'General',0).filter(id=>id!=='19');
  if(open.some(dmOwns)||!open.length)return false;
  p.aor={status:'notified',requestedAt:new Date().toISOString(),fields:open};
- p.messages.General.push({role:'agent',text:'',lines:[`I’ve also passed the campaign brief over to AoR. They’ll take care of the ${open.map(id=>definitions[id].field.replace(/ \/ Friendly From/,'').toLowerCase()).join(', ').replace(/, ([^,]*)$/,' and $1')}.`,'I’ll add each detail to the canvas as they provide it.'],event:'aor'});
+ p.messages.General.push({role:'agent',text:'',at:new Date().toISOString(),lines:[`I’ve also passed the campaign brief over to AoR. They’ll take care of the ${open.map(id=>definitions[id].field.replace(/ \/ Friendly From/,'').toLowerCase()).join(', ').replace(/, ([^,]*)$/,' and $1')}.`,'I’ll add each detail to the canvas as they provide it.'],event:'aor'});
  return true;
 }
 export function provideCampaignCode(state,code) {
@@ -160,7 +173,7 @@ export function provideCampaignCode(state,code) {
  const ok=setField(state,'19',code,'General',0,'Provided by OMS');
  if(!ok&&state.fields['19']!==code)return false;
  p.oms={...(p.oms||{}),status:'provided',providedAt:new Date().toISOString()};
- p.messages.General.push({role:'agent',text:'',lines:[`Good news: OMS has issued the Campaign Code, ${code}.`,'I’ve added it to the canvas.'],event:'oms'});
+ p.messages.General.push({role:'agent',text:'',at:new Date().toISOString(),lines:[`Good news: OMS has issued the Campaign Code, ${code}.`,'I’ve added it to the canvas.'],event:'oms'});
  evaluateGeneral(state);
  return true;
 }
