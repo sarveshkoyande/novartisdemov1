@@ -5,7 +5,7 @@
 // otherwise the Cosentyx sample emails below are offered.
 
 export interface LibraryEmail { key: string; name: string; fuse?: string; subjects: string[]; preheaders: string[] }
-export interface Touchpoint { email: string | null; wait: string; resend: string }
+export interface Touchpoint { email: string | null; subject?: string; preheader?: string; wait: string; resend: string }
 export interface Segment { name: string; count: number | null; touchpoints: Touchpoint[] }
 
 export const DEMO_SEGMENTS = ['PsO · New-to-Brand Dermatologists', 'PsA · Lapsed Rheumatology Prescribers'];
@@ -57,7 +57,7 @@ export function ensureSegments(state: any): Segment[] {
 // wait time and resend choice.
 export type TouchpointAsk =
   | { kind: 'count'; seg: number }
-  | { kind: 'email' | 'wait' | 'resend'; seg: number; tp: number }
+  | { kind: 'subject' | 'preheader' | 'wait' | 'resend'; seg: number; tp: number }
   | null;
 export function nextAsk(segments: Segment[]): TouchpointAsk {
   for (let seg = 0; seg < segments.length; seg++) {
@@ -65,10 +65,45 @@ export function nextAsk(segments: Segment[]): TouchpointAsk {
     if (sg.count == null) return { kind: 'count', seg };
     for (let tp = 0; tp < sg.touchpoints.length; tp++) {
       const t = sg.touchpoints[tp];
-      if (!t.email) return { kind: 'email', seg, tp };
+      if (!t.email || !t.subject) return { kind: 'subject', seg, tp };
+      if (!t.preheader) return { kind: 'preheader', seg, tp };
       if (!t.wait) return { kind: 'wait', seg, tp };
       if (!t.resend) return { kind: 'resend', seg, tp };
     }
   }
   return null;
+}
+
+// Mock-up default: a campaign with no emails starts with the Cosentyx sample emails, fully
+// filled in, so the Email section, the workspace and the touchpoint picker all show them.
+// Theme and Behavior Chain are left for AoR, as in a real campaign.
+export function seedDemoEmails(state: any, addEmail: (st: any) => number, inherit: (st: any) => void): boolean {
+  const p = state.planning;
+  if (!p || p.emails.length) return false;
+  const deploy = ['2026-11-03', '2026-11-10', '2026-11-17', '2026-11-24'];
+  DEMO_EMAILS.forEach((e, n) => {
+    const at = addEmail(state);
+    const email = p.emails[at];
+    const values: Record<string, string> = {
+      '32': e.fuse || '', '33': '2027-10-31', '34': '2026-09-30', '35': '2027-12-31',
+      '36': e.name.replace(/^Email \d+ · /, ''), '37': deploy[n] || '', '38': 'No',
+      '39': e.subjects.join('\n'), '40': e.preheaders.join('\n'), '43': 'No', '44': 'No',
+    };
+    for (const [id, v] of Object.entries(values)) { email.fields[id] = v; email.meta[id] = { source: 'Cosentyx sample (demo)' }; }
+  });
+  if (!state.fields['24']) { state.fields['24'] = String(DEMO_EMAILS.length); p.meta['24'] = { source: 'Cosentyx sample (demo)' }; }
+  p.active = 0;
+  p.version++;
+  inherit(state);
+  return true;
+}
+
+// Every subject line across the library, each naming the email it belongs to.
+export function subjectOptions(library: LibraryEmail[]) {
+  return library.flatMap(e => e.subjects.map((text, i) => ({ key: `${e.key}::s${i}`, primary: text, secondary: `${e.name}${e.fuse ? ' · ' + e.fuse : ''}`, email: e.key, text })));
+}
+// The pre-headers of one email.
+export function preheaderOptions(library: LibraryEmail[], emailKey: string | null) {
+  const e = library.find(x => x.key === emailKey);
+  return e ? e.preheaders.map((text, i) => ({ key: `${e.key}::p${i}`, primary: text, secondary: e.name, text })) : [];
 }

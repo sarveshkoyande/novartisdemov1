@@ -4,7 +4,8 @@ import AgentOrb, { useSpeakingPulse } from '../../components/AgentOrb';
 import Composer from '../../components/Composer';
 import Signature from '../../components/Signature';
 import { useCampaignStore } from '../../stores/useCampaignStore';
-import { planning, required, unresolved } from '../../studio/planningModel';
+import { planning, required, unresolved, addEmail, inherit } from '../../studio/planningModel';
+import { seedDemoEmails } from '../../studio/touchpointDemo';
 import { roleSection } from '../../studio/roleStatus';
 import { usePersonaStore } from '../../stores/usePersonaStore';
 import { api } from '../../api';
@@ -29,6 +30,9 @@ export default function ReviewView() {
   const orbState = useSpeakingPulse(pulse, 1800);
 
   useEffect(() => { document.title = 'Campaign Accelerator · Campaign review'; heading.current?.focus({ preventScroll: true }); }, []);
+  // Mock-up: campaigns without emails start with the Cosentyx sample emails.
+  useEffect(() => { if (!planning(state).emails.length) mutate(st => { seedDemoEmails(st, addEmail, inherit); }); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function respond(text: string) { setFeedback(text); setPulse(p => p + 1); }
 

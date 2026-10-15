@@ -2,8 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import AccelerateHeader from '../../components/AccelerateHeader';
 import AgentOrb from '../../components/AgentOrb';
 import Composer from '../../components/Composer';
-import EmailPicker from '../../components/EmailPicker';
-import { emailLibrary, ensureSegments, nextAsk, WAIT_OPTIONS, type Segment } from '../../studio/touchpointDemo';
+import OptionPicker from '../../components/EmailPicker';
+import { emailLibrary, ensureSegments, nextAsk, preheaderOptions, seedDemoEmails, subjectOptions, WAIT_OPTIONS, type Segment } from '../../studio/touchpointDemo';
 import Signature from '../../components/Signature';
 import { useCampaignStore } from '../../stores/useCampaignStore';
 import { api } from '../../api';
@@ -13,7 +13,7 @@ import { isMineFor, otherOwnerLabel } from '../../studio/ownership';
 import { PERSONAS, usePersonaStore } from '../../stores/usePersonaStore';
 import {
   planning, groups, definitions, label, target, value, choices, applicable, issue, required, unresolved,
-  sectionStatus, addEmail, setField, evaluateGeneral, revise, resubmit, validate, mapMessage, provideCampaignCode,
+  sectionStatus, addEmail, inherit, setField, evaluateGeneral, revise, resubmit, validate, mapMessage, provideCampaignCode,
 } from '../../studio/planningModel';
 import { inputsFromCampaign, generateFlow, chatEditFlow, patchToInputs } from '../../studio/flowPlanner';
 import type { OrbState } from '../../components/agent-orb/agent-orb.js';
@@ -51,6 +51,7 @@ export default function PlanningView() {
   const openPanel = (tab: 'workspace' | 'log') => { setPanelTab(tab); setPanelOpen(true); };
   // Touchpoints are organised by segment: set the segments up the first time the section opens.
   useEffect(() => {
+    if (['Email', 'Touchpoint'].includes(s) && !p.emails.length) update(st => { seedDemoEmails(st, addEmail, inherit); });
     if (s === 'Touchpoint' && !p.segments?.length) update(st => { ensureSegments(st); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s]);
@@ -304,6 +305,7 @@ export default function PlanningView() {
       return;
     }
     const section = s;
+    if (answerTouchpointCount(text)) { setDraft(''); return; }
     const q = current.current;
     // A short reply while a question is open answers that question directly.
     if (q && q.section === section && text.trim().length <= 120 && !/[.;]\s+\S/.test(text.trim())) {
@@ -592,7 +594,9 @@ export default function PlanningView() {
   // it sends (picked from the email library), the wait time and whether to resend.
   const segments: Segment[] = p.segments || [];
   const library = emailLibrary(p.emails || []);
-  const emailName = (key: string | null) => library.find(e => e.key === key)?.name || '—';
+  const subjects = subjectOptions(library);
+  const subjectKey = (t: { email: string | null; subject?: string }) => subjects.find(o => o.email === t.email && o.text === t.subject)?.key || null;
+  const preheaderKey = (t: { email: string | null; preheader?: string }) => preheaderOptions(library, t.email).find(o => o.text === t.preheader)?.key || null;
 
   function answerTouchpoint(question: string, shown: string, apply: (sg: Segment[]) => void) {
     update((_, pl) => {
@@ -601,6 +605,24 @@ export default function PlanningView() {
       pl.messages.Touchpoint.push({ role: 'user', text: shown });
       pl.version++;
     });
+  }
+
+  // A typed reply to "how many touchpoints": take the first number (digits or words).
+  function answerTouchpointCount(text: string): boolean {
+    const ask = nextAsk(segments);
+    if (s !== 'Touchpoint' || ask?.kind !== 'count') return false;
+    const words: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+    const m = text.toLowerCase().match(/\b(\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten)\b/);
+    const n = m ? Number(m[1]) || words[m[1]] : 0;
+    const sg = segments[ask.seg];
+    const question = `How many touchpoints should the ${sg.name} segment have?`;
+    if (!n || n > 12) {
+      update((_, pl) => { pl.messages.Touchpoint.push({ role: 'user', text }); pl.messages.Touchpoint.push({ role: 'agent', text: 'Please give the number of touchpoints as a number between 1 and 12.' }); pl.drafts.Touchpoint = ''; });
+      return true;
+    }
+    answerTouchpoint(question, text.trim(), list => { list[ask.seg].count = n; list[ask.seg].touchpoints = Array.from({ length: n }, () => ({ email: null, subject: '', preheader: '', wait: '', resend: '' })); });
+    update((_, pl) => { pl.drafts.Touchpoint = ''; });
+    return true;
   }
 
   function touchpointStory() {
@@ -623,7 +645,8 @@ export default function PlanningView() {
     const tpLabel = ask.kind === 'count' ? '' : `touchpoint ${ask.tp + 1} of the ${sg.name} segment`;
     const question = ask.kind === 'count'
       ? `How many touchpoints should the ${sg.name} segment have?`
-      : ask.kind === 'email' ? `Which email should ${tpLabel} send?`
+      : ask.kind === 'subject' ? `Which subject line should ${tpLabel} use?`
+      : ask.kind === 'preheader' ? 'And which pre-header should go with it?'
       : ask.kind === 'wait' ? `How long should we wait after ${tpLabel} before the next send?`
       : `Should ${tpLabel} be resent to people who didn’t open it?`;
     const intro = ask.kind === 'count' && ask.seg === 0 && !history.length
@@ -634,12 +657,17 @@ export default function PlanningView() {
         {intro}
         <div className="story-question">
           <p className="story-lead">{question}</p>
-          {ask.kind === 'count' && (
-            <div className="story-chips">{[1, 2, 3, 4].map(n => <button key={n} type="button" onClick={() => answerTouchpoint(question, `${n} touchpoint${n === 1 ? '' : 's'}`, list => { list[ask.seg].count = n; list[ask.seg].touchpoints = Array.from({ length: n }, () => ({ email: null, wait: '', resend: '' })); })}>{n}</button>)}</div>
+          {ask.kind === 'count' && <p className="story-hint">Type the number in the message box below.</p>}
+          {ask.kind === 'subject' && (
+            <OptionPicker options={subjects} label="Choose a subject line" onPick={key => { const o = subjects.find(x => x.key === key)!; answerTouchpoint(question, o.text, list => { Object.assign(list[ask.seg].touchpoints[ask.tp], { email: o.email, subject: o.text, preheader: '' }); }); }} />
           )}
-          {ask.kind === 'email' && (
-            <EmailPicker emails={library} onPick={key => answerTouchpoint(question, emailName(key), list => { list[ask.seg].touchpoints[ask.tp].email = key; })} />
-          )}
+          {ask.kind === 'preheader' && (() => {
+            const t = sg.touchpoints[ask.tp], opts = preheaderOptions(library, t.email);
+            return <>
+              <p className="story-hint">Subject line “{t.subject}” · {library.find(e => e.key === t.email)?.name}</p>
+              <OptionPicker options={opts} label="Choose a pre-header" onPick={key => { const o = opts.find(x => x.key === key)!; answerTouchpoint(question, o.text, list => { list[ask.seg].touchpoints[ask.tp].preheader = o.text; }); }} />
+            </>;
+          })()}
           {ask.kind === 'wait' && (
             <div className="story-chips">
               {WAIT_OPTIONS.map(w => <button key={w} type="button" onClick={() => answerTouchpoint(question, w, list => { list[ask.seg].touchpoints[ask.tp].wait = w; })}>{w}</button>)}
@@ -649,7 +677,7 @@ export default function PlanningView() {
           {ask.kind === 'resend' && (
             <div className="story-chips">{['Yes', 'No'].map(v => <button key={v} type="button" onClick={() => answerTouchpoint(question, v, list => { list[ask.seg].touchpoints[ask.tp].resend = v; })}>{v}</button>)}</div>
           )}
-          {library[0]?.key.startsWith('demo') && ask.kind === 'email' && <p className="story-hint">Showing the Cosentyx sample emails, because no emails with subject lines have been captured yet.</p>}
+          {library[0]?.key.startsWith('demo') && ask.kind === 'subject' && <p className="story-hint">Showing the Cosentyx sample emails, because no emails with subject lines have been captured yet.</p>}
         </div>
       </div>
     );
@@ -668,8 +696,9 @@ export default function PlanningView() {
                 <div key={tp} className={`mem-card tp-row ${t.email ? 'src-you' : 'src-none'}`}>
                   <span className="mem-label">Touchpoint {tp + 1}</span>
                   <div className="tp-detail">
-                    <EmailPicker emails={library} value={t.email} label="Choose email" onPick={key => setTp(seg, tp, { email: key })} />
-                    <small>{t.wait ? `Wait ${t.wait}` : 'Wait time not set'} · {t.resend ? `Resend: ${t.resend}` : 'Resend not set'}</small>
+                    <OptionPicker compact options={subjects} value={subjectKey(t)} label="Choose subject line" onPick={key => { const o = subjects.find(x => x.key === key)!; setTp(seg, tp, { email: o.email, subject: o.text, preheader: o.email === t.email ? t.preheader : '' }); }} />
+                    {t.email && <OptionPicker compact options={preheaderOptions(library, t.email)} value={preheaderKey(t)} label="Choose pre-header" onPick={key => setTp(seg, tp, { preheader: preheaderOptions(library, t.email).find(x => x.key === key)!.text })} />}
+                    <small>{t.email ? `${library.find(e => e.key === t.email)?.name} · ` : ''}{t.wait ? `Wait ${t.wait}` : 'Wait time not set'} · {t.resend ? `Resend: ${t.resend}` : 'Resend not set'}</small>
                   </div>
                 </div>
               ))}

@@ -296,3 +296,5 @@ input:focus, input:focus-visible, textarea:focus, textarea:focus-visible, select
 .tp-detail .email-picker-trigger { min-height:34px; font-size:13px; }
 .tp-detail .email-picker-list { width:420px; left:auto; right:0; }
 .tp-detail small { display:block; margin-top:4px; font-size:12px; color:#6b7482; }
+.campaign-memory .mem-value { white-space:pre-line; align-items:flex-start; } .campaign-memory .mem-card .mem-value::before { margin-top:6px; }
+.email-picker-list > li > button small { display:block; margin-top:3px; font-size:12px; line-height:16px; color:#7a7a7a; } .email-picker.is-compact + .email-picker.is-compact { margin-top:6px; }

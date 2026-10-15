@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import type { LibraryEmail } from '../studio/touchpointDemo';
 
-// A dropdown of the campaign's emails. Each option shows the email name, then its
-// subject-line variations, then its pre-header variations, so emails can be told apart.
-export default function EmailPicker({ emails, value, onPick, label = 'Choose an email' }: {
-  emails: LibraryEmail[]; value?: string | null; onPick: (key: string) => void; label?: string;
+export interface PickOption { key: string; primary: string; secondary?: string }
+
+// A scrollable dropdown. Touchpoints use it twice: first to pick a subject line from every
+// email (each option names the email it belongs to), then a pre-header from that email.
+export default function OptionPicker({ options, value, onPick, label, compact }: {
+  options: PickOption[]; value?: string | null; onPick: (key: string) => void; label: string; compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
-  const chosen = emails.find(e => e.key === value);
+  const chosen = options.find(o => o.key === value);
   useEffect(() => {
     if (!open) return;
     const close = (e: MouseEvent) => { if (!box.current?.contains(e.target as Node)) setOpen(false); };
@@ -16,21 +17,18 @@ export default function EmailPicker({ emails, value, onPick, label = 'Choose an 
     return () => document.removeEventListener('mousedown', close);
   }, [open]);
   return (
-    <div className="email-picker" ref={box}>
+    <div className={`email-picker${compact ? ' is-compact' : ''}`} ref={box}>
       <button type="button" className="email-picker-trigger" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen(o => !o)}>
-        <span>{chosen ? chosen.name : label}</span>
+        <span>{chosen ? chosen.primary : label}</span>
         <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
       </button>
       {open && (
         <ul className="email-picker-list" role="listbox" aria-label={label}>
-          {emails.map(e => (
-            <li key={e.key} role="option" aria-selected={e.key === value}>
-              <button type="button" onClick={() => { onPick(e.key); setOpen(false); }}>
-                <strong>{e.name}</strong>{e.fuse && <small className="email-picker-fuse">{e.fuse}</small>}
-                <span className="email-picker-label">Subject lines</span>
-                <ol>{e.subjects.map(x => <li key={x}>{x}</li>)}</ol>
-                <span className="email-picker-label">Pre-headers</span>
-                <ol>{e.preheaders.map(x => <li key={x}>{x}</li>)}</ol>
+          {options.map(o => (
+            <li key={o.key} role="option" aria-selected={o.key === value}>
+              <button type="button" onClick={() => { onPick(o.key); setOpen(false); }}>
+                <strong>{o.primary}</strong>
+                {o.secondary && <small>{o.secondary}</small>}
               </button>
             </li>
           ))}
