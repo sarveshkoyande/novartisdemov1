@@ -52,9 +52,11 @@ export default function PlanningView() {
   // Touchpoints are organised by segment: set the segments up the first time the section opens.
   useEffect(() => {
     if (['Email', 'Touchpoint'].includes(s) && !p.emails.length) update(st => { seedDemoEmails(st, addEmail, inherit); });
+    // The Email section is a list of prepared emails to review, so it opens on the full field list.
+    if (s === 'Email' && p.mode !== 'REVIEW ALL') update((_, pl) => { pl.mode = 'REVIEW ALL'; });
     if (s === 'Touchpoint' && !p.segments?.length) update(st => { ensureSegments(st); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s]);
+  }, [s, state]);  // state: re-run when a freshly loaded copy of the campaign replaces this one
   // Flow canvas hover tools: the block under the pointer and whether its shape palette is open.
   const [blockTools, setBlockTools] = useState<{ code: string; left: number; top: number; open: boolean } | null>(null);
   const toolsTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
