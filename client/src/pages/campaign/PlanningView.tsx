@@ -391,7 +391,10 @@ export default function PlanningView() {
               <button type="submit">Save</button>
               <Btn onClick={() => update((_, pl) => { pl.editing = null; })}>Cancel</Btn>
             </form>
-          ) : <span className={`mem-value ${v && !meta.waiting ? '' : 'empty'}`}>{meta.waiting || !v ? '--' : v}</span>}
+          ) : ['39', '40'].includes(id) && v && !meta.waiting
+            // Subject lines and pre-headers can have several variations: number them.
+            ? <ol className="mem-value mem-variants">{String(v).split('\n').filter(Boolean).map((line, n) => <li key={n}><b>{n + 1}.</b>{line}</li>)}</ol>
+            : <span className={`mem-value ${v && !meta.waiting ? '' : 'empty'}`}>{meta.waiting || !v ? '--' : v}</span>}
           {id === '19' && !v && <small>{p.oms ? 'Requested from OMS. OMS provides this code; the Delivery Manager cannot enter it.' : 'Provided by OMS. NORA requests it automatically once the details above it are complete.'}</small>}
           {id === '11' && <small>Single-channel preview. HQE/SMS selection behavior remains a source conflict.</small>}
           {id === '49.1' && <small>Source options unresolved; entered condition is not a validated option.</small>}
@@ -524,6 +527,7 @@ export default function PlanningView() {
         <button type="button" className="panel-close" aria-label="Close panel" onClick={() => setPanelOpen(false)}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke="#686868" strokeWidth="1.8" strokeLinecap="round" /></svg>
         </button>
+        <div className="panel-scroll">
         {panelTab === 'log' ? campaignLog() : <>
         <div className="memory-heading"><h2>Campaign Memory</h2></div>
         <p className="memory-description">Review the workspace information NORA has structured so far.</p>
@@ -584,6 +588,7 @@ export default function PlanningView() {
         })()}
         <div className="memory-legend" aria-label="Legend"><span className="src-you"><i aria-hidden="true" />Provided by you</span><span className="src-mapped"><i aria-hidden="true" />Mapped from source</span></div>
         </>}
+        </div>
       </aside>
     );
   }

@@ -298,3 +298,15 @@ input:focus, input:focus-visible, textarea:focus, textarea:focus-visible, select
 .tp-detail small { display:block; margin-top:4px; font-size:12px; color:#6b7482; }
 .campaign-memory .mem-value { white-space:pre-line; align-items:flex-start; } .campaign-memory .mem-card .mem-value::before { margin-top:6px; }
 .email-picker-list > li > button small { display:block; margin-top:3px; font-size:12px; line-height:16px; color:#7a7a7a; } .email-picker.is-compact + .email-picker.is-compact { margin-top:6px; }
+/* Campaign Memory scrolls on its own; the tabs and close button stay put. */
+.is-planning .campaign-memory { overflow:visible; padding-right:8px; }
+.is-planning .campaign-memory > .panel-scroll { flex:1 1 auto; min-height:0; overflow-y:auto; padding-right:24px; scrollbar-width:thin; display:flex; flex-direction:column; }
+.campaign-memory .panel-scroll > * { flex:none; }
+/* Numbered subject-line / pre-header variations */
+.campaign-memory .mem-variants { display:flex; flex-direction:column; gap:6px; margin:0; padding:0; list-style:none; white-space:normal; }
+.campaign-memory .mem-card .mem-variants::before { display:none; }
+.campaign-memory .mem-variants li { display:flex; gap:8px; font-size:14px; line-height:20px; }
+.campaign-memory .mem-variants li::before { content:''; width:8px; height:8px; margin-top:6px; border-radius:50%; flex:none; background:#c9ccd1; }
+.campaign-memory .mem-card.src-you .mem-variants li::before { background:#52aa00; }
+.campaign-memory .mem-card.src-mapped .mem-variants li::before { background:#0d59dc; }
+.campaign-memory .mem-variants b { flex:none; font-weight:600; color:#6b7482; }
